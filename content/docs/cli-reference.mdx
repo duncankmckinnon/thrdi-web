@@ -1,0 +1,287 @@
+---
+title: CLI reference
+description: Every `thirdeye` command, flag, and filter.
+order: 99
+---
+
+Every `thirdeye` subcommand. The `thirdeye` and `thrdi` binaries are aliases — pick whichever you prefer. Session IDs accept any unique prefix throughout.
+
+## Commands at a glance
+
+| Command | Description |
+|---------|-------------|
+| `thirdeye add --<platform>` | Register hooks so future agent sessions on that platform are captured. |
+| `thirdeye remove --<platform>` | Detach hooks for a platform (data on disk is untouched). |
+| `thirdeye list` | List recent sessions across all platforms, newest first. |
+| `thirdeye events <id>` | Print all events for a session. |
+| `thirdeye event <id> <seq>` | Print one event, fully expanded. |
+| `thirdeye tail <id>` | Print the most recent events (or follow live). |
+| `thirdeye search <query>` | Substring search across every captured event. |
+| `thirdeye stats` | Aggregate totals across sessions. |
+| `thirdeye tag <id> <seq>` | Add/remove tags on an event. |
+| `thirdeye tags` | List all tags in use across sessions. |
+| `thirdeye usage` | Global token-usage rollup. |
+| `thirdeye usage <id>` | Per-turn token-usage detail for one session. |
+| `thirdeye usage reindex` | Rebuild the SQLite usage index from the JSONL sidecars. |
+| `thirdeye usage errors` | Tail the usage capture audit log. |
+| `thirdeye eval def list / show / create / edit / rm` | Manage eval rubrics. |
+| `thirdeye eval run <id>` | Dispatch an evaluator agent against a session. |
+| `thirdeye eval show <id>` | Print the latest eval result for a session. |
+| `thirdeye eval list` | History of eval runs across sessions. |
+| `thirdeye eval status` | Show background eval jobs. |
+| `thirdeye skill list / install` | Manage the bundled agent skills (see [Agent skills](/docs/skills)). |
+
+Common flags available on most read commands: `--json` (parseable JSONL), `--tree` (human-readable), `--platform`, `--cwd`, `--tag`, `--since`, `--until`.
+
+---
+
+## Tracing
+
+### `thirdeye add`
+
+```
+thirdeye add --claude
+thirdeye add --cursor
+thirdeye add --codex
+thirdeye add --gemini
+thirdeye add --copilot
+```
+
+Registers a hook so the next session on that platform is captured. Idempotent.
+
+### `thirdeye remove`
+
+```
+thirdeye remove --<platform>
+```
+
+Reverses the corresponding `add`. Captured data on disk is left in place.
+
+---
+
+## Reading history
+
+### `thirdeye list`
+
+```
+thirdeye list [--platform NAME] [--cwd PATH] [--tag NAME]
+              [--since DATE] [--until DATE] [--json | --tree]
+```
+
+List sessions, newest first.
+
+### `thirdeye events`
+
+```
+thirdeye events <id> [--json | --tree] [--no-findings] [--eval NAME]
+                     [--tag NAME] [--since DATE] [--until DATE]
+```
+
+All events for a session. Eval findings annotate the timeline by default; suppress with `--no-findings` or filter with `--eval`.
+
+### `thirdeye event`
+
+```
+thirdeye event <id> <seq> [--json]
+```
+
+One event, fully expanded.
+
+### `thirdeye tail`
+
+```
+thirdeye tail <id> [-n N] [--json]
+```
+
+Most recent `N` events for a session (default `N` follows tool's standard).
+
+### `thirdeye search`
+
+```
+thirdeye search <query> [--platform NAME] [--cwd PATH] [--tag NAME]
+                        [--since DATE] [--until DATE] [--json | --tree]
+```
+
+Substring scan across every captured event.
+
+### `thirdeye stats`
+
+```
+thirdeye stats [--platform NAME] [--since DATE] [--until DATE] [--json]
+```
+
+Aggregate counts and totals across sessions.
+
+---
+
+## Tags
+
+### `thirdeye tag`
+
+```
+thirdeye tag <id> <seq> --add tag1,tag2
+thirdeye tag <id> <seq> --remove tag1
+thirdeye tag <id> --list
+```
+
+Add or remove comma-separated tags on a specific event. `--list` shows every tagged event in a session.
+
+### `thirdeye tags`
+
+```
+thirdeye tags [--json]
+```
+
+Global inventory of every tag across all sessions, with counts.
+
+---
+
+## Token usage
+
+### `thirdeye usage`
+
+```
+thirdeye usage [--platform NAME] [--harness NAME] [--model SUBSTR]
+               [--since DATE] [--until DATE]
+               [--top N] [--sort total|input|output|ts] [--json]
+```
+
+Global rollup, sessions ordered by total token spend.
+
+### `thirdeye usage <id>`
+
+```
+thirdeye usage <id> [--json]
+```
+
+Per-turn detail for one session, anchored to event `seq`.
+
+### `thirdeye usage reindex`
+
+```
+thirdeye usage reindex
+```
+
+Rebuild `<thirdeye_home>/usage.db` from every `usage.jsonl` under `traces/`. Safe to run any time.
+
+### `thirdeye usage errors`
+
+```
+thirdeye usage errors
+```
+
+Tail the capture audit log written when usage parsing fails.
+
+---
+
+## Evaluations
+
+### `thirdeye eval def list`
+
+```
+thirdeye eval def list
+```
+
+List available rubrics (shipped + user-created).
+
+### `thirdeye eval def show`
+
+```
+thirdeye eval def show <name>
+```
+
+Print the directive text for a rubric.
+
+### `thirdeye eval def create`
+
+```
+thirdeye eval def create <name> --directive "<text>"
+thirdeye eval def create <name> --from <path>
+```
+
+Create a custom rubric.
+
+### `thirdeye eval def edit`
+
+```
+thirdeye eval def edit <name>
+```
+
+Open a rubric in `$EDITOR`.
+
+### `thirdeye eval def rm`
+
+```
+thirdeye eval def rm <name>
+```
+
+Delete a rubric.
+
+### `thirdeye eval run`
+
+```
+thirdeye eval run <id> --agent claude|codex|gemini
+                       [--using NAME] [--background]
+```
+
+Dispatch an evaluator agent against a session. `--using` selects the rubric (default `default`). `--background` detaches. Exit code is always `0`; the verdict is in the result.
+
+### `thirdeye eval show`
+
+```
+thirdeye eval show <id> [--using NAME] [--json]
+```
+
+Latest eval result for a session.
+
+### `thirdeye eval list`
+
+```
+thirdeye eval list [--platform NAME] [--cwd PATH]
+                   [--since DATE] [--until DATE]
+                   [--verdict pass|warn|fail] [--using NAME] [--json]
+```
+
+History of eval runs across sessions.
+
+### `thirdeye eval status`
+
+```
+thirdeye eval status
+```
+
+Show background eval jobs and their state.
+
+---
+
+## Skills
+
+See [Agent skills](/docs/skills) for usage patterns.
+
+### `thirdeye skill list`
+
+```
+thirdeye skill list
+```
+
+Print bundled skill names.
+
+### `thirdeye skill install`
+
+```
+thirdeye skill install [PARENT_DIR]
+                       [--only NAME] [--force]
+```
+
+Install bundled skills as symlinks. Default parent directory is `.agents/skills/`.
+
+---
+
+## Global options
+
+| Flag / env var | Effect |
+|----------------|--------|
+| `--json` | Emit JSONL on commands that support it. |
+| `--tree` | Human-readable layout where supported. |
+| `THIRDEYE_HOME` | Override the data directory (default: `~/.thirdeye`). |
+| `thirdeye --help` | Full inline reference; works on every subcommand. |

@@ -1,0 +1,67 @@
+---
+title: Agent skills
+description: Let your agents inspect, search, and evaluate their own history.
+order: 6
+---
+
+thirdeye ships two Claude-Code-format skills so the agents you trace can also *use* their history. Installed once into a repo, they're discoverable by Claude Code, Cursor, and any other client that reads the `.agents/skills/` or `.claude/skills/` conventions.
+
+## The bundled skills
+
+### `use-thirdeye`
+
+Basic CLI fluency. Teaches an agent to:
+
+- Enable tracing for a platform (`thirdeye add`).
+- Search and retrieve sessions (`thirdeye list`, `thirdeye events`, `thirdeye event`, `thirdeye tail`, `thirdeye search`).
+- Debug failed tool calls by filtering events and reading payloads.
+- Read per-turn token usage from `thirdeye usage`.
+- Tag and curate events (`thirdeye tag`, `thirdeye tags`).
+
+Reach for this skill when you want your agent to introspect a past session — yours or its own — to debug, summarize, or follow up on prior work.
+
+### `use-thirdeye-evals`
+
+The full eval workflow. Teaches an agent to:
+
+- List and show shipped rubrics; create custom ones with `thirdeye eval def create`.
+- Dispatch evaluators with `thirdeye eval run` (foreground or `--background`).
+- Read results with `thirdeye eval show` / `thirdeye eval list`.
+- Interpret per-turn findings anchored to event `seq`.
+- Apply common patterns (token efficiency, tool quality, error recovery, task adherence, redundancy).
+
+Pair it with `use-thirdeye` — the eval skill assumes you can already navigate sessions.
+
+## Installing into a repo
+
+```bash
+thirdeye skill list                                  # show bundled skill names
+thirdeye skill install                               # all skills → .agents/skills/
+thirdeye skill install .claude/skills                # custom parent dir
+thirdeye skill install --only use-thirdeye-evals     # just one
+thirdeye skill install --force                       # replace existing entries
+```
+
+By default `thirdeye skill install` writes into `.agents/skills/` for cross-client discoverability. Pass a path argument to target a different convention (e.g. `.claude/skills` if you only use Claude Code).
+
+### Symlinks, not copies
+
+Skills install as **symlinks** pointing at the bundled skill content inside the installed thirdeye package. So when you upgrade thirdeye (`brew upgrade thirdeye` or `pipx upgrade thrdi`), the skill content refreshes automatically in every repo that has them installed — no per-repo reinstall required.
+
+If you want a frozen copy that won't move with thirdeye upgrades, install once and then replace the symlink with `cp -RL`.
+
+## Using a skill
+
+### Claude Code
+
+After install, Claude Code picks up skills under `.agents/skills/` and `.claude/skills/` automatically. Mention the skill by name in your prompt — for example, "use the `use-thirdeye` skill to find sessions that touched `auth.py` last week" — and Claude will load the skill instructions.
+
+### Cursor / Codex / Gemini
+
+Any client that reads the `.agents/skills/` convention will discover the same files. For clients that don't, point them at the `SKILL.md` directly — the file is plain markdown and the rest of the skill (the `references/` directory) is just supplementary content the agent reads when needed.
+
+## Tips
+
+- **Install both skills together** unless you specifically don't want evals available — agents tend to chain "find a problem" → "grade the problem" naturally once both skills are on hand.
+- **Re-run `thirdeye skill install`** if you've moved or renamed your skills directory; it's idempotent and `--force` will replace stale entries.
+- **Audit what the skill does.** Skills are markdown — read them. They're at `.agents/skills/use-thirdeye/SKILL.md` (or wherever you installed them) and link out to the reference files for each workflow.

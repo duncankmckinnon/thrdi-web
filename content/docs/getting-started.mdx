@@ -1,0 +1,92 @@
+---
+title: Getting Started
+description: Install thirdeye and capture your first agent session.
+order: 1
+---
+
+> **Local-first by design.** Every trace, tag, and eval lives on your filesystem under `~/.thirdeye/`. No cloud, no SaaS, no telemetry.
+
+## Install
+
+thirdeye ships as `thrdi` on PyPI and `thirdeye` on Homebrew. The installed commands are `thirdeye` and `thrdi` — aliases of each other.
+
+### Homebrew (recommended)
+
+```bash
+brew install duncankmckinnon/tap/thirdeye
+```
+
+### pipx / uv
+
+```bash
+pipx install thrdi
+# or
+uv tool install thrdi
+```
+
+Verify the install:
+
+```bash
+thirdeye --help
+```
+
+## Enable tracing
+
+Attach thirdeye to whichever agent CLIs you use. Each `add` is idempotent — running it twice leaves a single hook entry in place.
+
+```bash
+thirdeye add --claude        # Claude Code
+thirdeye add --cursor        # Cursor
+thirdeye add --codex         # OpenAI Codex CLI
+thirdeye add --gemini        # Gemini CLI
+thirdeye add --copilot       # GitHub Copilot CLI
+```
+
+After the next agent run on that platform, a session will appear in `thirdeye list`. See [Tracing agents](/docs/tracing) for what each integration does under the hood and how to verify it's wired up.
+
+## Read your first session
+
+Once you've used your agent at least once after enabling tracing, your history is queryable:
+
+```bash
+thirdeye list                  # every session, newest first
+thirdeye list --tree           # human-readable layout
+thirdeye events <id>           # one session's events, terse
+thirdeye event <id> <seq>      # one event, fully expanded
+thirdeye tail <id> -n 5        # the last few events of a session
+```
+
+Session IDs accept any unique prefix, so `thirdeye events abc1` works as long as `abc1` is unambiguous. Add `--json` to any read command for parseable JSONL.
+
+A typical first look:
+
+```bash
+$ thirdeye list --tree
+claude    a3f2c8b1   ~/code/thrdi-web      2026-05-20 14:22   running
+claude    91e4d20a   ~/code/thirdeye       2026-05-20 11:03   done
+cursor    7d12c9b3   ~/code/wbcli-web      2026-05-19 18:41   done
+
+$ thirdeye tail a3f2c8 -n 3
+```
+
+## Detach
+
+Disable hooks for a platform without removing thirdeye itself:
+
+```bash
+thirdeye remove --claude
+thirdeye remove --cursor
+thirdeye remove --codex
+thirdeye remove --gemini
+thirdeye remove --copilot
+```
+
+Existing session data on disk is untouched — you can re-enable later and pick up where you left off.
+
+## What's next
+
+- **[Tracing agents](/docs/tracing)** — per-platform install details and verification steps.
+- **[Search & tags](/docs/search-tags)** — slice your history by content, tag, platform, or time.
+- **[Token usage](/docs/usage-tokens)** — per-turn input/output token rollups.
+- **[Evaluations](/docs/evals)** — grade recorded sessions with LLM-as-judge rubrics.
+- **[Agent skills](/docs/skills)** — let your agents inspect their own history.
