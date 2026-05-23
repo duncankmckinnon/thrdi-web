@@ -1,0 +1,82 @@
+---
+title: Token usage
+description: Per-turn input/output token counts captured automatically.
+order: 4
+---
+
+thirdeye captures model name and token counts per turn into an append-only sidecar (`usage.jsonl`) and a global SQLite index (`usage.db`). Capture starts automatically on the next agent run after `thirdeye add` — there's nothing extra to enable.
+
+## Layout
+
+For each session, usage records land in `<thirdeye_home>/traces/<platform>/<sid>/usage.jsonl`. A separate global index at `<thirdeye_home>/usage.db` aggregates every session for fast cross-session queries. The JSONL files are the source of truth — the SQLite index can always be rebuilt from them.
+
+Each usage row has at least: `ts`, `model`, `platform`, `harness`, `input_tokens`, `output_tokens`, plus the session id and turn `seq`.
+
+## Global rollup
+
+```bash
+thirdeye usage
+```
+
+Lists sessions ordered by total token spend (newest sessions first by default; sort order configurable). Use this as your starting point when investigating cost.
+
+```bash
+thirdeye usage --top 5 --since 2026-05-01
+thirdeye usage --platform claude --model "sonnet"
+```
+
+## Per-session detail
+
+```bash
+thirdeye usage <id>
+```
+
+Per-turn rows for one session — input/output tokens against the event `seq` they belong to, so you can correlate spikes against `thirdeye events <id>`.
+
+```bash
+thirdeye usage a3f2c8 --json | jq 'select(.output_tokens > 4000)'
+```
+
+## Filters
+
+| Flag | Effect |
+|------|--------|
+| `--platform NAME` | Restrict to one platform (`claude`, `cursor`, `codex`, `gemini`, `copilot`). |
+| `--harness NAME` | Restrict to one harness (e.g. CLI vs. IDE shim). |
+| `--model SUBSTR` | Substring match against model name. |
+| `--since DATE` / `--until DATE` | Time window. |
+| `--top N` | Limit to the top N rows after sorting. |
+| `--sort total\|input\|output\|ts` | Sort key for the rollup. |
+
+```bash
+thirdeye usage --sort output --top 10 --since 2026-05-01
+thirdeye usage --model gpt-5 --harness codex
+```
+
+## Maintenance
+
+### Reindex
+
+If the SQLite index drifts (e.g. you manually edited a sidecar, restored from backup, or upgraded thirdeye across a schema bump), rebuild it from the JSONL sidecars:
+
+```bash
+thirdeye usage reindex
+```
+
+Reindex reads every `usage.jsonl` under `<thirdeye_home>/traces/` and rewrites `usage.db` from scratch. Safe to run any time.
+
+### Capture errors
+
+If you suspect usage rows are missing for a session, check the capture audit log:
+
+```bash
+thirdeye usage errors
+```
+
+This tails the audit log thirdeye writes when usage parsing fails — typically because an agent emitted a new event shape thirdeye doesn't recognize yet. Each entry includes the session id, raw event, and reason.
+
+## Troubleshooting
+
+- **No usage rows for a session.** Confirm the session is from *after* you ran `thirdeye add`. Capture is wired up at hook registration; pre-existing sessions don't backfill.
+- **Numbers look stale.** Run `thirdeye usage reindex`.
+- **Per-turn rows missing for one platform.** Check `thirdeye usage errors` — the agent may be emitting a new event shape.
