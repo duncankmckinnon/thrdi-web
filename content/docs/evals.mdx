@@ -1,0 +1,84 @@
+---
+title: Evaluations
+description: LLM-as-judge against recorded sessions, with custom rubrics.
+order: 5
+---
+
+thirdeye lets you grade a recorded session by dispatching one of your installed CLI agents (`claude`, `codex`, or `gemini`) as an LLM-as-judge. Rubrics — called **eval definitions** — are named directive text bundled with sensible defaults and editable per-user. Results are append-only at `<session>/evals.jsonl` and per-turn findings anchor to the event `seq` they comment on, so `thirdeye events <id>` annotates its timeline with the findings inline.
+
+The eval run itself is captured as a thirdeye-traced session, so every grading run has its own audit trail.
+
+## Eval definitions (rubrics)
+
+Three shipped defaults are lazily materialized into `<thirdeye_home>/evals/defs/` the first time you list them, so you can edit them in place:
+
+- `default` — general-purpose adherence check.
+- `token-efficiency` — flags redundant or oversized turns.
+- `tool-quality` — flags incorrect tool selection and error-recovery patterns.
+
+```bash
+thirdeye eval def list                                       # available rubrics
+thirdeye eval def show default                               # see the directive
+thirdeye eval def create my-rubric --directive "<text>"      # custom rubric
+thirdeye eval def edit my-rubric                             # open in $EDITOR
+thirdeye eval def rm my-rubric                               # delete
+```
+
+A directive is just markdown text — describe what to look for, what verdicts mean, and what shape findings should take.
+
+## Running an eval
+
+```bash
+thirdeye eval run <id> --agent claude
+thirdeye eval run <id> --using token-efficiency --agent gemini
+```
+
+`--using` selects the rubric (defaults to `default`). `--agent` picks which CLI runs as judge.
+
+The dispatched agent runs **read-only** with platform-specific sandboxes:
+
+- Claude — `--allowedTools` allowlist limited to `thirdeye` and `sqlite3`.
+- Codex — `--sandbox read-only`.
+- Gemini — `--approval-mode plan`.
+
+No new Python deps — thirdeye shells out to the agent binaries you already have installed.
+
+### Background mode
+
+For long-running evals, detach into the background:
+
+```bash
+thirdeye eval run <id> --agent claude --background
+thirdeye eval status                                # poll background jobs
+```
+
+Exit code is `0` regardless of verdict — the verdict is in the result, not the process status.
+
+## Viewing results
+
+```bash
+thirdeye eval show <id>                  # latest result for a session
+thirdeye eval show <id> --using my-rubric
+thirdeye eval list                       # history across all sessions
+thirdeye eval list --since 2026-05-01 --verdict warn
+```
+
+Each result has a verdict (`pass` / `warn` / `fail`), score(s), and per-turn findings.
+
+### Inline annotations
+
+By default, `thirdeye events <id>` and `thirdeye event <id> <seq>` weave findings into the event timeline using each finding's anchored `seq`:
+
+```bash
+thirdeye events <id>                     # annotated by default
+thirdeye events <id> --no-findings       # suppress
+thirdeye events <id> --eval token-efficiency   # only one rubric's findings
+```
+
+This is the fastest way to read an eval — you see the model's critique sitting right next to the turn it's critiquing.
+
+## Tips
+
+- **Audit your judges.** Because each eval is itself a traced session, you can `thirdeye eval run` against the eval's own session to grade the grader.
+- **Compare rubrics on the same session.** Run two rubrics and `thirdeye eval list <id>` shows both, side by side.
+- **Start with the defaults.** `default`, `token-efficiency`, and `tool-quality` cover most one-off questions. Author a custom rubric when you find yourself asking the same question repeatedly.

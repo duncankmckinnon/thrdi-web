@@ -1,0 +1,80 @@
+---
+title: Search & tags
+description: Slice your agent history by content, tag, platform, or time.
+order: 3
+---
+
+`thirdeye search` does a substring scan across every captured event in your local store. Tags annotate individual events so you can build up a personal taxonomy — "review this later", "bug", "exemplar" — and then use those annotations as filters.
+
+## Substring search
+
+```bash
+thirdeye search "migration"
+```
+
+Matches any event whose text content contains `migration`. Newest sessions first. Add `--json` for parseable JSONL output, or `--tree` for a human-readable layout.
+
+## Filters
+
+Every filter below works on `search`, `list`, and `events`:
+
+| Flag | Effect |
+|------|--------|
+| `--platform NAME` | Only sessions from this platform (`claude`, `cursor`, `codex`, `gemini`, `copilot`). |
+| `--cwd PATH` | Only sessions started from this working directory. |
+| `--tag NAME` | Only events (or sessions containing events) with this tag. |
+| `--since DATE` | Events on or after this date. |
+| `--until DATE` | Events on or before this date. |
+
+Dates accept `YYYY-MM-DD` or any ISO-ish timestamp.
+
+```bash
+thirdeye search "TypeError" --platform claude --since 2026-05-01
+thirdeye list --cwd ~/code/thrdi-web
+thirdeye events a3f2c8 --tag bug
+```
+
+## Tagging events
+
+Tags are added to individual events (identified by session id + `seq`). They're stored in `tags.jsonl` next to the event log, so a tag operation is append-only and replayable.
+
+```bash
+thirdeye tag <id> <seq> --add bug,review     # add tags
+thirdeye tag <id> <seq> --remove bug         # remove a tag
+thirdeye tag <id> --list                     # list tagged events in a session
+thirdeye tags                                # global tag inventory across all sessions
+```
+
+`--add` and `--remove` accept comma-separated lists. A tag added with `thirdeye tag` is immediately available as a `--tag` filter elsewhere.
+
+## Worked example: tag then search
+
+You're auditing failed tool calls across last week's Claude sessions. Tag the suspect events, then pull them back as a group.
+
+```bash
+# 1. Find candidate events.
+thirdeye search "tool_use_error" --platform claude --since 2026-05-15
+
+# 2. For each match, tag the event.
+thirdeye tag a3f2c8 47 --add audit
+thirdeye tag 91e4d2 12 --add audit
+thirdeye tag 7d12c9 88 --add audit
+
+# 3. Pull the audit set back later, with full event detail.
+thirdeye search "" --tag audit --json | jq .
+```
+
+You can also tag during review and then build a search-driven dashboard in your shell — e.g. count of `audit`-tagged events per day:
+
+```bash
+thirdeye search "" --tag audit --json \
+  | jq -r '.ts[:10]' \
+  | sort | uniq -c
+```
+
+## Tips
+
+- **Session prefixes work everywhere.** `thirdeye tag a3f2 47 --add bug` is fine if `a3f2` is unique.
+- **`thirdeye tags`** is the discovery command — run it first when you've forgotten what tags you're already using.
+- **Combine filters freely.** `--platform claude --cwd ~/code/thrdi-web --tag review --since 2026-05-01` is a valid drill-down.
+- **`--json` everywhere.** Almost every read command emits JSONL with `--json` so you can pipe into `jq`, `awk`, or another tool.
