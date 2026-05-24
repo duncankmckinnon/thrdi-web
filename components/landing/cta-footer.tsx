@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { InstallCommand } from "@/components/landing/install-command";
 
-export function CTAFooter() {
+export function CtaFooter() {
   return (
     <section className="relative overflow-hidden px-6 py-24 lg:px-8">
       {/* Gradient background */}
