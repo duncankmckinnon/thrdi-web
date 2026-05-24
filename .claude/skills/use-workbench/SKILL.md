@@ -1,0 +1,526 @@
+---
+name: use-workbench
+description: Use when writing or editing a workbench plan (.workbench/*.md), designing task graphs for parallel agent execution, or preparing work for the wb CLI to dispatch
+---
+
+# Writing Workbench Plans
+
+How to write effective plans for the `wb` CLI to execute with parallel AI agents.
+
+## Overview
+
+Workbench (`wb`) is a multi-agent orchestrator that takes a markdown plan, breaks it into independent tasks, and dispatches parallel AI coding agents (Claude Code, Gemini CLI, Codex, Copilot CLI, or custom) to implement, test, and review each task in isolated git worktrees.
+
+Each task becomes a standalone agent session — the agent only sees its own task description, not the rest of the plan. This means the plan must be thorough enough that each task is self-sufficient.
+
+## When to Use
+
+- Writing a new `.workbench/*.md` plan file
+- Breaking a feature or refactor into parallel agent tasks
+- Reviewing whether a plan will execute correctly before running `wb run`
+- Debugging why agents produced incorrect output (usually a plan clarity issue)
+
+## Plan Format
+
+```markdown
+# Plan Title
+
+## Context
+
+<What is this project? What are we building? Why?>
+
+<Key architectural decisions and constraints>
+
+## Conventions
+
+<Project-specific patterns agents must follow:>
+- <Language/framework version>
+- <Import conventions>
+- <Error handling patterns>
+- <Naming conventions>
+- <Test patterns and test command>
+
+## Task: Short title
+Files: src/auth.py, src/middleware.py
+Depends: database-setup
+
+Detailed description of what to implement...
+
+### Expected behavior
+<Concrete specification of what the code should do>
+
+### Test plan
+<What tests to write, what command to run, what passing looks like>
+```
+
+## Plan run-config (frontmatter)
+
+Plans can declare run-time defaults in a `---`-delimited YAML block at the very top of the file, before `# Title`:
+
+```markdown
+---
+session_branch: workbench-auth
+base: feature-auth
+tdd: true
+agent: claude
+max_concurrent: 6
+profile_name: fast
+---
+# Auth refactor
+
+## Context
+...
+```
+
+### Schema
+
+| Key | CLI flag | Type |
+|---|---|---|
+| `session_branch` | `-b` / `--session-branch` | string (alias of `name`) |
+| `name` | `--name` | string (alias of `session_branch`) |
+| `base` | `--base` | string |
+| `local` | `--local` | bool |
+| `agent` | `--agent` | string |
+| `profile` | `--profile` | string (path) |
+| `profile_name` | `--profile-name` | string |
+| `max_concurrent` | `-j` / `--max-concurrent` | int (>= 1) |
+| `max_retries` | `--max-retries` | int (>= 0) |
+| `tdd` | `--tdd` | bool |
+| `skip_test` | `--skip-test` | bool |
+| `skip_review` | `--skip-review` | bool |
+| `retry_failed` | `--retry-failed` | bool |
+| `fail_fast` | `--fail-fast` | bool |
+| `cleanup` | `--cleanup` | bool |
+| `keep_branches` | `--keep-branches` | bool |
+| `push` | `--push` | bool |
+| `final_review` | `--final-review` | bool |
+
+### Precedence
+
+CLI flag > frontmatter > built-in default. Determined via `click.Context.get_parameter_source()`.
+
+### Session branch semantics
+
+`session_branch` and `name` are aliases — both declare the session branch identity for this plan. The orchestrator:
+
+- **Creates** the branch from `base` (default: `main`) if it doesn't exist yet — first run "just works".
+- **Reuses** the branch if it already exists — subsequent runs resume the same session.
+- Auto-numbers a new `workbench-<N>` branch when neither field is set.
+
+Set both `session_branch` and `name` only by mistake; if they differ, `session_branch` wins and a warning is printed.
+
+### Not allowed in frontmatter
+
+`--repo`, `--no-tmux`, `-w`/`--start-wave`/`--end-wave`, `--task`, `--only-incomplete`, and `*-directive` flags are per-invocation and not plan-shaped — they stay CLI-only.
+
+Unknown keys raise `ValueError` — typos are never silently ignored.
+
+### Plan Sections
+
+- `## Context` — Injected into every agent's prompt. Describe the project, what's being built, and why.
+- `## Conventions` — Injected into every agent's prompt. Specify language version, test framework, import style, naming conventions. If the plan omits this section but `.workbench/conventions.md` exists, workbench injects that file's content as the Conventions section at runtime (see [Project conventions](#project-conventions) below).
+- `## Task: <title>` — Each task becomes an independent agent session in its own git worktree.
+
+### Task Metadata
+
+- **Files:** — Comma-separated list of files the task creates or modifies. Prevents parallel tasks from conflicting.
+- **Depends:** — Comma-separated task slugs this task depends on. Tasks with unmet dependencies wait until earlier waves complete.
+- Aliases: `Scope:` works like `Files:`, `After:`/`Dependencies:` work like `Depends:`.
+
+### Dependency Slugs
+
+Dependencies reference other tasks by their title converted to a slug (lowercase, non-alphanumeric replaced with `-`). For example, `## Task: Database Setup` has slug `database-setup`.
+
+**Keep task titles short (2-4 words).** The title becomes the dependency slug, and long titles produce unwieldy slugs that are error-prone to type in `Depends:` lines. Compare:
+
+| Title | Slug | Verdict |
+|-------|------|---------|
+| Prompt builder | `prompt-builder` | Good |
+| Agent adapters | `agent-adapters` | Good |
+| Structured prompt builder with plan context injection | `structured-prompt-builder-with-plan-context-injection` | Too long |
+| Update agents to use adapters and tmux | `update-agents-to-use-adapters-and-tmux` | Too long |
+
+Treat the title as a label, not a description — the task body has all the detail.
+
+## Writing Good Task Descriptions
+
+Each task runs in an **isolated worktree** — the agent only sees its own task description, not other tasks. Every task description must contain:
+
+1. **What to build** — Concrete deliverables, not vague goals
+2. **Where it goes** — Exact file paths for new and modified files
+3. **How it works** — Function signatures, type definitions, behavior specs
+4. **How it fits** — Imports, interfaces with existing code, how other modules will use this
+5. **Patterns to follow** — "Use the same pattern as X" with enough detail to follow it
+6. **Test expectations** — What tests to write, what command to run, what passing looks like
+7. **Edge cases** — Error handling, boundary conditions, validation rules
+8. **What NOT to do** — Constraints, anti-patterns, things that seem obvious but are wrong in this codebase
+
+If the task depends on interfaces from an earlier wave, describe those interfaces in full — the agent cannot see the other task's output.
+
+### Example: Good vs Bad
+
+**Bad** (too vague, agent will guess):
+```markdown
+## Task: Add authentication
+Add auth to the app.
+```
+
+**Good** (self-contained, specific):
+```markdown
+## Task: JWT auth middleware
+Files: src/auth/middleware.py, src/auth/tokens.py, tests/test_auth.py
+
+Create JWT-based authentication middleware for the FastAPI app.
+
+### Implementation
+- `src/auth/tokens.py`: `create_token(user_id: str) -> str` and `verify_token(token: str) -> dict`
+  using PyJWT. Tokens expire after 24h. Secret from `AUTH_SECRET` env var.
+- `src/auth/middleware.py`: FastAPI dependency `require_auth(request: Request) -> User`
+  that extracts Bearer token from Authorization header, verifies it, and returns the user.
+- Follow the existing middleware pattern in `src/middleware/logging.py`.
+
+### Tests
+- `tests/test_auth.py`: test token creation, verification, expiry, and invalid tokens.
+- Run: `pytest tests/test_auth.py`
+```
+
+## Designing for Parallelism
+
+Tasks in the same wave run simultaneously in separate worktrees. They **cannot see each other's changes**, and modifying the same files causes merge conflicts.
+
+**Strategies:**
+- Group work by file ownership — each task owns distinct files
+- Push shared infrastructure (types, configs) to earlier waves using `Depends:`
+- If two tasks must touch the same file, make one depend on the other
+
+### Example: Parallel-Safe Plan
+
+```markdown
+## Task: User model
+Files: src/models/user.py, migrations/001_users.sql
+
+## Task: Product model
+Files: src/models/product.py, migrations/002_products.sql
+
+## Task: API endpoints
+Files: src/api/routes.py, src/api/handlers.py
+Depends: user-model, product-model
+```
+
+Wave 1 runs the two model tasks in parallel (different files). Wave 2 runs the API task after both complete.
+
+## Planning Process
+
+Creating a good plan is the most important step. Follow these phases:
+
+### Phase 1: Understand the Problem
+- What is the user trying to achieve? What's the end state?
+- What are the constraints (performance, compatibility, existing patterns)?
+- What's changing? What's staying the same?
+
+Ask clarifying questions if anything is ambiguous. It's better to ask now than to have 6 agents each make a different assumption.
+
+### Phase 2: Survey the Codebase
+Read the code before designing tasks:
+- Project structure, module organization, entry points
+- Existing patterns — how are similar things already done?
+- Dependencies and interfaces between modules
+- Test infrastructure — framework, location, test command
+- Build and config files
+
+### Phase 3: Design the Task Graph
+Break work into tasks with the execution model in mind:
+- Each task runs in an isolated worktree
+- File overlap between parallel tasks creates merge conflicts
+- Push shared infrastructure to earlier waves
+- Maximize parallelism by grouping work by file ownership
+
+### Phase 4: Write Detailed Descriptions
+Follow the checklist in "Writing Good Task Descriptions" above. Every task must include enough context for an agent that has never seen the rest of the plan.
+
+### Phase 5: Validate
+Before running:
+- [ ] Can each task be implemented knowing only its own description?
+- [ ] Are file sets disjoint within each wave?
+- [ ] Do dependent tasks describe the interfaces they depend on?
+- [ ] Is the test command specified and will it work in a fresh worktree?
+- [ ] Are there implicit assumptions that should be explicit?
+
+## Agent Pipeline
+
+Each task goes through: **implement -> test -> review -> fix**
+
+- **Implementor** — Writes code and commits to the task branch
+- **Tester** — Runs tests, writes new tests if specified, emits `VERDICT: PASS` or `VERDICT: FAIL`
+- **Reviewer** — Reviews the diff for correctness and quality, emits a verdict
+- **Fixer** — If test/review fails, receives feedback and makes targeted fixes (up to `--max-retries`)
+- **Merger** — If merge conflicts occur between parallel branches, resolves them automatically
+
+Stages can be skipped with `--skip-test` or `--skip-review`.
+
+Task outcomes are tracked in `.workbench/status.json` as each task completes, enabling resume-from-failure workflows.
+
+## Handling Failures
+
+### Automatic retry
+
+```bash
+wb run plan.md --retry-failed
+```
+
+Re-runs tasks that crashed (agent error, timeout) after each wave. Tasks that exhausted their fix retries (`fix_count >= max_retries`) are left alone — they need plan or directive changes, not another blind run.
+
+### Fail fast
+
+```bash
+wb run plan.md --fail-fast
+```
+
+Stops after the first wave with any failed tasks. Composes with `--retry-failed` (retry first, then stop if still failing).
+
+### Re-run only failed tasks
+
+```bash
+wb run plan.md -b workbench-1 --only-incomplete
+```
+
+Reads `.workbench/status.json` to skip tasks that already completed. Requires `-b` to specify the session branch to resume.
+
+### Re-run specific tasks
+
+```bash
+wb run plan.md -b workbench-1 --task task-2
+wb run plan.md -b workbench-1 --task task-1 --task task-3
+wb run plan.md -b workbench-1 --task my-feature-name    # by slug
+```
+
+Runs only the specified tasks. All other tasks are left untouched — no worktrees, no pipelines, no status changes. Accepts task IDs or slugs (title converted to lowercase-dashes). If a task has an existing branch from a prior run, it is cleaned up and started fresh. Status records for non-targeted tasks are preserved.
+
+`--task` works without `-b` too — it just creates a new session with only those tasks.
+
+### Wave control
+
+Run a specific wave or range of waves instead of the full plan:
+
+```bash
+wb run plan.md -w 2                          # run only wave 2
+wb run plan.md --start-wave 2                # run waves 2 through end
+wb run plan.md --start-wave 2 --end-wave 4   # run waves 2, 3, and 4
+wb run plan.md -b workbench-1 -w 3           # resume session, run only wave 3
+```
+
+- `-w N` / `--wave N` — run only wave N (sets both start and end)
+- `--start-wave N` — start from wave N, run through the last wave (default: 1)
+- `--end-wave N` — stop after wave N (default: last wave)
+
+Out-of-range values are clamped automatically with a warning: `--start-wave` defaults to 1, `--end-wave` defaults to the last wave. If `--end-wave` is less than `--start-wave`, it defaults to the last wave.
+
+Waves before `--start-wave` are marked as already completed (skipped). Waves after `--end-wave` are not executed.
+
+### Merge unmerged branches
+
+```bash
+wb merge -b workbench-1
+```
+
+Merges completed-but-unmerged task branches without re-running pipelines. Uses a resolver agent for conflicts. Branches already merged via git are detected and skipped.
+
+## Directive Overrides
+
+The instructions given to each agent role can be overridden from the CLI:
+
+```bash
+wb run plan.md --reviewer-directive "Focus only on security vulnerabilities and data validation."
+wb run plan.md --tester-directive "Run pytest with -x flag. Only test the new code, not existing tests."
+```
+
+This is useful when you want agents to focus on specific aspects without modifying the plan itself.
+
+## Common Mistakes
+
+| Mistake | Fix |
+|---------|-----|
+| Task says "add auth" with no details | Specify exact files, function signatures, error handling, test command |
+| Two parallel tasks edit the same file | Add `Depends:` to serialize them, or extract shared changes to an earlier task |
+| Task depends on another but doesn't describe the interface | Copy function signatures and types into the dependent task's description |
+| No `## Context` or `## Conventions` section | Agents follow their own defaults — specify language version, test framework, import style |
+| Test command missing or wrong | Agent may skip tests or run the wrong suite — always include `Run: <command>` |
+| Task title is a full sentence | Keep titles to 2-4 words — they become dependency slugs |
+| Line number references for code to change | Line numbers shift — describe code by content/pattern instead |
+
+## Project conventions
+
+A repo can ship a single canonical conventions file at `.workbench/conventions.md` so every plan inherits the same project-wide rules without copy-pasting them into each plan.
+
+**Resolution rule (fallback-only, runtime, no plan mutation):**
+
+| Plan has `## Conventions` section? | `.workbench/conventions.md` exists? | What agents see |
+|---|---|---|
+| Yes | either | The plan's own section. The file is ignored. |
+| No | Yes | The file's content is injected as a `## Conventions` section into in-memory plan text loaded by the orchestrator, summarizer, branch reviewer, and PR writer. |
+| No | No | No conventions section. Agents follow their own defaults. |
+
+The planner (`wb plan generate`) is conventions-aware: if the file exists, it receives the content as context and is told **not** to write a `## Conventions` section in the plan it generates. If the file doesn't exist, it's told to write its own section when the source material implies conventions worth capturing.
+
+### Managing the file
+
+```bash
+wb conventions init              # write a starter template
+wb conventions init --generate   # dispatch an agent (with the generate-conventions skill) to draft it from a codebase scan
+wb conventions edit              # open in $EDITOR (creates from template if missing)
+wb conventions show              # print to stdout
+wb conventions delete            # remove the file (prompts unless --yes)
+```
+
+`init` errors if the file already exists. "Redo from scratch" is `wb conventions delete && wb conventions init --generate`.
+
+## Branching Strategy
+
+By default, `wb run` fetches `origin/main` and creates a new session branch (`workbench-N`) from the latest remote state. This ensures work starts from the most up-to-date code and avoids merge conflicts when the session branch is later merged back.
+
+### Flags
+
+| Flag | Base branch | Source | Use case |
+|------|-------------|--------|----------|
+| *(default)* | `main` | `origin/main` (fetched) | Standard — start from latest remote |
+| `--local` | `main` | local `main` | Build on uncommitted/unpushed local work |
+| `--base feature-x` | `feature-x` | `origin/feature-x` (fetched) | Branch from a specific remote branch |
+| `--base feature-x --local` | `feature-x` | local `feature-x` | Branch from a local feature branch |
+| `-b workbench-3` | *(existing)* | *(existing)* | Resume a previous session branch |
+
+### When to use `--local`
+
+Use `--local` when your base branch has local commits you haven't pushed yet and you want workbench to build on top of them. Without `--local`, workbench fetches from origin and your unpushed work won't be included.
+
+### When to use `--base`
+
+Use `--base` when you're working off a branch other than `main` — for example, a long-running feature branch, a release branch, or another team member's branch. Combined with `--local`, it lets you build on any local branch.
+
+### Resuming with `-b`
+
+Use `-b workbench-N` (or `--session-branch`) to resume a previous session. This skips branch creation entirely and continues merging into the existing session branch. Pair with `-w N` to run only a specific wave, `--start-wave N` to skip already-completed waves, or `--start-wave N --end-wave M` to run a range of waves.
+
+## Profiles
+
+Profiles configure which agent CLI and instructions are used for each pipeline role. When no profile exists, built-in defaults apply.
+
+### Roles and fields
+
+Roles: `implementor`, `tester`, `reviewer`, `fixer`, `merger`
+
+Each role supports:
+- `agent` — CLI command (default: `claude`). Supported: `claude`, `gemini`, `codex`, `cursor`, `copilot`, or any custom CLI via `.workbench/agents.yaml`.
+- `directive` — Full replacement for the role's default instructions.
+- `directive_extend` — Text appended to the default instructions. Cannot be combined with `directive` on the same role.
+
+### YAML format
+
+Create or edit `.workbench/profile.yaml`:
+
+```yaml
+roles:
+  reviewer:
+    agent: gemini
+    directive: "Focus on security and correctness."
+  tester:
+    directive_extend: "Also check edge cases for null inputs."
+  implementor:
+    agent: codex
+```
+
+Only include roles and fields you want to override — everything else uses built-in defaults.
+
+### Named profiles
+
+Store multiple configurations as `profile.<name>.yaml`:
+
+```bash
+wb profile init --name fast --set reviewer.agent=gemini --set implementor.agent=codex
+wb run plan.md --profile-name fast
+```
+
+### Profile CLI commands
+
+```bash
+wb profile init                                        # create profile.yaml from defaults
+wb profile init --global                               # create in ~/.workbench/
+wb profile init --set reviewer.agent=gemini            # create with inline overrides
+wb profile init --name fast --set reviewer.agent=gemini  # create a named profile
+wb profile show                                        # print resolved profile
+wb profile show --name fast                            # show a named profile
+wb profile set reviewer.agent gemini                   # update a field
+wb profile set reviewer.agent codex --name fast        # update a named profile
+wb profile diff                                        # show differences from defaults
+wb profile diff --name fast                            # diff a named profile
+```
+
+### Merge order
+
+Profiles merge in order: built-in defaults < `~/.workbench/profile.yaml` < `.workbench/profile.yaml` < `--profile` flag < CLI flags. Named profiles (`--profile-name`) replace the default filename at each level.
+
+## TDD Mode
+
+With `--tdd`, the pipeline becomes: **test (write failing) → implement (make pass) → test (verify) → review → fix**
+
+In TDD mode, the tester writes comprehensive failing tests first. The implementor then writes code to make all tests pass and reports whether the tests are comprehensive. Normal test verification and review follow.
+
+## Updating workbench
+
+To update workbench and its skills to the latest version:
+
+```bash
+pip install --upgrade wbcli    # upgrade the package
+wb setup --update              # overwrite project-level skill files with the latest version
+```
+
+For user-level skills:
+
+```bash
+wb setup --global --update     # update user-level skills
+```
+
+If using `--symlink`, skill files stay in sync automatically — no `--update` needed.
+
+## Key commands
+
+- `wb run <plan>` — execute a plan; CLI flags override frontmatter declared at the top of the plan
+- `wb run plan.md --name auth-feature` — name the session branch
+- `wb run plan.md --keep-branches` — keep task branches after merging
+- `wb run plan.md --tdd` — test-driven: tests first, then implement
+- `wb run plan.md --base feature-x` — branch from a specific branch
+- `wb run plan.md --local` — branch from local ref instead of fetching
+- `wb run plan.md -w 2` — run only wave 2
+- `wb run plan.md --start-wave 2 --end-wave 4` — run waves 2 through 4
+- `wb run plan.md -b my-session -w 3` — resume session, run only wave 3
+- `wb run plan.md --profile-name fast` — use a named profile
+- `wb run plan.md --retry-failed` — auto-retry crashed tasks
+- `wb run plan.md --fail-fast` — stop on first wave failure
+- `wb resume workbench-1` — resume a session, re-running every task that isn't done + merged
+- `wb run plan.md -b workbench-1 --only-incomplete` — same as `wb resume`, but lets you override flags
+- `wb run plan.md -b workbench-1 --task task-2` — re-run a specific task
+- `wb merge -b workbench-1` — merge unmerged branches without re-running
+- `wb preview <plan>` — dry-run to see parsed tasks and waves
+- `wb status` — show active worktrees
+- `wb stop` — kill all active agent sessions
+- `wb stop --cleanup` — also remove worktrees and branches
+- `wb clean` — remove worktrees, `wb/*` branches, and completed-plan status files (refuses if anything is in-flight; pass `--force` or `--completed`)
+- `wb clean <project>` — scope cleanup to a single plan; accepts a plan name (`my-plan`) or path (`.workbench/my-plan/plan.md`). Also removes `.workbench/<project>/` if it ends up empty
+- `wb clean --dry-run` — preview what would be removed
+- `wb conventions init [--generate]` — create `.workbench/conventions.md` from a template (or from a codebase scan with `--generate`)
+- `wb conventions edit` / `wb conventions show` / `wb conventions delete` — manage the conventions file
+- `wb setup` — create .workbench/, install skills locally, prepare repo
+- `wb setup --agent gemini` — install skills for Gemini CLI
+- `wb setup --profile` — also create a profile.yaml with the detected agent
+- `wb setup --update` — force-update skills to the latest version
+- `wb setup --global` — install skills to user-level paths (no .workbench/ creation)
+- `wb setup --global --agent claude` — install to ~/.claude/skills/
+- `wb setup --global --agent gemini` — install to ~/.agents/skills/
+- `wb agents init` — create agents.yaml with built-in adapter configs
+- `wb agents list` — show built-in and custom agents
+- `wb agents add <name> --command <cmd>` — add a custom agent
+- `wb agents remove <name>` — remove a custom agent
+- `wb profile init` — create profile.yaml from defaults
+- `wb profile init --name fast --set reviewer.agent=gemini` — create a named profile with overrides
+- `wb profile show` — print resolved profile
+- `wb profile set <key> <value>` — update a profile field
+- `wb profile diff` — show differences from defaults
