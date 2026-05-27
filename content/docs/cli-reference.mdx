@@ -29,6 +29,8 @@ Every `thirdeye` subcommand. The `thirdeye` and `thrdi` binaries are aliases —
 | `thirdeye eval show <id>` | Print the latest eval result for a session. |
 | `thirdeye eval list` | History of eval runs across sessions. |
 | `thirdeye eval status` | Show background eval jobs. |
+| `thirdeye ui` | Launch the local browser UI (see [Browser UI](/docs/ui)). |
+| `thirdeye views list / save / delete` | Manage saved filter views used by the UI sidebar. |
 | `thirdeye skill list / install` | Manage the bundled agent skills (see [Agent skills](/docs/skills)). |
 
 Common flags available on most read commands: `--json` (parseable JSONL), `--tree` (human-readable), `--platform`, `--cwd`, `--tag`, `--since`, `--until`.
@@ -251,6 +253,30 @@ thirdeye eval status
 ```
 
 Show background eval jobs and their state.
+
+---
+
+## Browser UI
+
+See [Browser UI](/docs/ui) for the full reference.
+
+### `thirdeye ui`
+
+```
+thirdeye ui [--port N] [--host ADDR] [--no-browser]
+```
+
+Launch the local browser UI. Defaults to `http://127.0.0.1:8765` and auto-opens your default browser. Requires the `ui` extra (`pip install 'thrdi[ui]'`).
+
+### `thirdeye views`
+
+```
+thirdeye views list --page sessions
+thirdeye views save <name> --page sessions
+thirdeye views delete <name> --page sessions
+```
+
+Manage saved filter views from the CLI. Views are persisted at `<thirdeye_home>/views/<page>.json` and shared with the UI sidebar.
 
 ---
 
