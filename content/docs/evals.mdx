@@ -77,6 +77,10 @@ thirdeye events <id> --eval token-efficiency   # only one rubric's findings
 
 This is the fastest way to read an eval — you see the model's critique sitting right next to the turn it's critiquing.
 
+## In the browser UI
+
+Everything above is also available in [`thirdeye ui`](/docs/ui): browse and edit rubrics, dispatch single-session or **batch** runs across a selection, and read results through two cross-cuts — every run of one rubric across sessions (`/evals/defs/<name>/results`), or every run of one rubric on one session with parsed verdict and score columns (`/sessions/<id>/evals/<def_name>`).
+
 ## Tips
 
 - **Audit your judges.** Because each eval is itself a traced session, you can `thirdeye eval run` against the eval's own session to grade the grader.

@@ -1,6 +1,7 @@
 import type { ComponentPropsWithoutRef } from "react";
 import { Mermaid } from "./mermaid";
 import { DiagramContainer } from "./diagram-container";
+import { UIPreview } from "./ui-preview";
 
 function slugify(text: string): string {
   return text
@@ -103,4 +104,5 @@ export const mdxComponents: Record<string, React.ComponentType<any>> = {
   ),
   Mermaid,
   DiagramContainer,
+  UIPreview,
 };
