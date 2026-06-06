@@ -4,103 +4,32 @@ description: Attach thirdeye to Claude Code, Cursor, Codex, Gemini, and Copilot.
 order: 2
 ---
 
-`thirdeye add --<platform>` registers a hook with each supported agent so every subsequent session is captured into your local trace store. Hooks are platform-specific — usually a config entry that runs a thirdeye shim wrapping the agent's session lifecycle — but the surface area is identical from your perspective: run the `add` command, then use your agent normally.
+`thirdeye add --<platform>` attaches thirdeye to a supported agent so every subsequent session is captured locally. From your perspective: run `add` once, then use your agent normally.
 
-All captured data lives under `<thirdeye_home>/traces/<platform>/<sid>/`, where `<thirdeye_home>` defaults to `~/.thirdeye` (override with `THIRDEYE_HOME`).
+All captured data lives under `~/.thirdeye/traces/<platform>/<sid>/` (override the root with `THIRDEYE_HOME`). The on-disk format is append-only and never mutated — safe to copy, back up, or delete wholesale.
 
-| File           | Purpose |
-|----------------|---------|
-| `events.alog`  | Append-only event log (msgpack frames). Never mutated. |
-| `events.idx`   | Index of frame offsets for fast `seq` lookup. |
-| `tags.jsonl`   | Sidecar with tag add/remove operations (append-only, replayable). |
-| `meta.yaml`    | Session metadata (`platform`, `cwd`, timestamps, status). |
-| `usage.jsonl`  | Per-turn token usage sidecar (see [Token usage](/docs/usage-tokens)). |
-| `evals.jsonl`  | Eval results, if any (see [Evaluations](/docs/evals)). |
+## Supported integrations
 
-## Claude Code
+Enable any of these with `thirdeye add --<platform>`. Each one is idempotent and takes effect on the platform's *next* agent run.
 
-```bash
-thirdeye add --claude
-```
+| Platform        | Command                  | What you should know                                                                                                          |
+|-----------------|--------------------------|-------------------------------------------------------------------------------------------------------------------------------|
+| **Claude Code** | `thirdeye add --claude`  | Captures full session lifecycle. Pairs with the `use-thirdeye`, `thirdeye-evals`, and `thirdeye-review` [agent skills](/docs/skills). |
+| **Cursor**      | `thirdeye add --cursor`  | Captures session lifecycle, prompts, shell, MCP, and file events. A thirdeye fault never blocks Cursor — failures are logged, not surfaced. |
+| **Codex**       | `thirdeye add --codex`   | Preserves Codex's `--sandbox read-only`. thirdeye observes; it does not relax the sandbox.                                    |
+| **Gemini**      | `thirdeye add --gemini`  | Gemini's `plan` / `default` / `yolo` approval modes pass through unchanged.                                                   |
+| **Copilot**     | `thirdeye add --copilot` | GitHub Copilot CLI.                                                                                                           |
 
-Registers a session lifecycle hook with the `claude` CLI so each session emits events into `<thirdeye_home>/traces/claude/<sid>/`. Includes the `use-thirdeye`, `thirdeye-evals`, and `thirdeye-review` skills if you've installed them.
+Once captured, every platform shares the same query surface: `thirdeye list / events / search / usage / tag / eval` all work identically across them.
 
-Verify:
+## Verify
 
 ```bash
-claude        # run any prompt, exit
-thirdeye list --platform claude
+# Run any agent prompt, then:
+thirdeye list --platform <name>     # session appears at the top
 ```
 
-You should see a new session at the top.
-
-## Cursor
-
-```bash
-thirdeye add --cursor
-```
-
-Registers a **multiplexed dispatcher** (`thirdeye-cursor-hook`) in `~/.cursor/hooks.json` as a single hook entrypoint for every Cursor lifecycle event. The dispatcher reads `hook_event_name` from stdin and translates each event into a thirdeye event (or a usage capture for `stop` / `sessionEnd`). Cursor sessions land under `<thirdeye_home>/traces/cursor/<sid>/`.
-
-### Traced events
-
-Fourteen Cursor lifecycle events are captured:
-
-| Group | Events |
-|-------|--------|
-| Session lifecycle | `sessionStart`, `sessionEnd`, `stop` |
-| Prompts & responses | `beforeSubmitPrompt`, `afterAgentResponse` |
-| Shell | `beforeShellExecution`, `afterShellExecution` |
-| MCP | `beforeMCPExecution`, `afterMCPExecution` |
-| Files | `beforeReadFile`, `afterFileEdit`, `beforeTabFileRead`, `afterTabFileEdit` |
-| Generic tool use | `postToolUse` |
-
-`stop` and `sessionEnd` additionally trigger a usage-capture pass so per-turn input/output tokens land in `usage.jsonl` (see [Token usage](/docs/usage-tokens)).
-
-Shell, file, and MCP calls are normalized into the same `tool_call` / `tool_result` envelope used by the other platforms — `thirdeye search`, tag filters, and eval rubrics work identically across Cursor, Claude, Codex, and Gemini sessions.
-
-### Verify
-
-```bash
-# Open Cursor, run an agent prompt, then close.
-thirdeye list --platform cursor                   # session should appear
-thirdeye events <sid> --tree                      # see the lifecycle events
-thirdeye usage <sid>                              # per-turn tokens
-```
-
-### Permissive responses
-
-The dispatcher always prints a permissive JSON response to Cursor's stdout so a thirdeye failure cannot block your agent run: `{"permission": "allow"}` for `before*` events that Cursor uses for gating, `{"continue": true}` for everything else. Capture errors are logged to `thirdeye usage errors` for later inspection.
-
-## Codex
-
-```bash
-thirdeye add --codex
-```
-
-Hooks the OpenAI Codex CLI (`codex`). Codex's read-only sandbox is preserved — thirdeye only observes events, it doesn't relax the sandbox.
-
-Verify with `thirdeye list --platform codex`.
-
-## Gemini
-
-```bash
-thirdeye add --gemini
-```
-
-Hooks the Gemini CLI (`gemini`). Gemini's approval modes (`plan` / `default` / `yolo`) pass through unchanged.
-
-Verify with `thirdeye list --platform gemini`.
-
-## Copilot
-
-```bash
-thirdeye add --copilot
-```
-
-Hooks the GitHub Copilot CLI (`copilot`).
-
-Verify with `thirdeye list --platform copilot`.
+For a deeper look, [agent skills](/docs/skills) walk an agent through inspecting its own runs — install `use-thirdeye` and ask your agent to "find recent sessions and summarize what they did."
 
 ## Detaching
 
