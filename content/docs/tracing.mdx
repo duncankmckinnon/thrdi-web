@@ -23,7 +23,7 @@ All captured data lives under `<thirdeye_home>/traces/<platform>/<sid>/`, where 
 thirdeye add --claude
 ```
 
-Registers a session lifecycle hook with the `claude` CLI so each session emits events into `<thirdeye_home>/traces/claude/<sid>/`. Includes the `use-thirdeye` and `use-thirdeye-evals` skills if you've installed them.
+Registers a session lifecycle hook with the `claude` CLI so each session emits events into `<thirdeye_home>/traces/claude/<sid>/`. Includes the `use-thirdeye`, `thirdeye-evals`, and `thirdeye-review` skills if you've installed them.
 
 Verify:
 
@@ -40,9 +40,37 @@ You should see a new session at the top.
 thirdeye add --cursor
 ```
 
-Wires the Cursor agent CLI through thirdeye. Cursor sessions land under `<thirdeye_home>/traces/cursor/<sid>/`.
+Registers a **multiplexed dispatcher** (`thirdeye-cursor-hook`) in `~/.cursor/hooks.json` as a single hook entrypoint for every Cursor lifecycle event. The dispatcher reads `hook_event_name` from stdin and translates each event into a thirdeye event (or a usage capture for `stop` / `sessionEnd`). Cursor sessions land under `<thirdeye_home>/traces/cursor/<sid>/`.
 
-Verify with `thirdeye list --platform cursor` after running an agent session in Cursor.
+### Traced events
+
+Fourteen Cursor lifecycle events are captured:
+
+| Group | Events |
+|-------|--------|
+| Session lifecycle | `sessionStart`, `sessionEnd`, `stop` |
+| Prompts & responses | `beforeSubmitPrompt`, `afterAgentResponse` |
+| Shell | `beforeShellExecution`, `afterShellExecution` |
+| MCP | `beforeMCPExecution`, `afterMCPExecution` |
+| Files | `beforeReadFile`, `afterFileEdit`, `beforeTabFileRead`, `afterTabFileEdit` |
+| Generic tool use | `postToolUse` |
+
+`stop` and `sessionEnd` additionally trigger a usage-capture pass so per-turn input/output tokens land in `usage.jsonl` (see [Token usage](/docs/usage-tokens)).
+
+Shell, file, and MCP calls are normalized into the same `tool_call` / `tool_result` envelope used by the other platforms — `thirdeye search`, tag filters, and eval rubrics work identically across Cursor, Claude, Codex, and Gemini sessions.
+
+### Verify
+
+```bash
+# Open Cursor, run an agent prompt, then close.
+thirdeye list --platform cursor                   # session should appear
+thirdeye events <sid> --tree                      # see the lifecycle events
+thirdeye usage <sid>                              # per-turn tokens
+```
+
+### Permissive responses
+
+The dispatcher always prints a permissive JSON response to Cursor's stdout so a thirdeye failure cannot block your agent run: `{"permission": "allow"}` for `before*` events that Cursor uses for gating, `{"continue": true}` for everything else. Capture errors are logged to `thirdeye usage errors` for later inspection.
 
 ## Codex
 

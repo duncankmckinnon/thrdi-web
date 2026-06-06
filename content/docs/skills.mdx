@@ -4,7 +4,7 @@ description: Let your agents inspect, search, and evaluate their own history.
 order: 7
 ---
 
-thirdeye ships two Claude-Code-format skills so the agents you trace can also *use* their history. Installed once into a repo, they're discoverable by Claude Code, Cursor, and any other client that reads the `.agents/skills/` or `.claude/skills/` conventions.
+thirdeye ships four Claude-Code-format skills so the agents you trace can also *use* their history. Installed once into a repo, they're discoverable by Claude Code, Cursor, and any other client that reads the `.agents/skills/` or `.claude/skills/` conventions.
 
 ## The bundled skills
 
@@ -20,7 +20,7 @@ Basic CLI fluency. Teaches an agent to:
 
 Reach for this skill when you want your agent to introspect a past session — yours or its own — to debug, summarize, or follow up on prior work.
 
-### `use-thirdeye-evals`
+### `thirdeye-evals`
 
 The full eval workflow. Teaches an agent to:
 
@@ -32,13 +32,29 @@ The full eval workflow. Teaches an agent to:
 
 Pair it with `use-thirdeye` — the eval skill assumes you can already navigate sessions.
 
+### `thirdeye-review`
+
+A workflow for auditing *other* agents' traces to find inefficiencies and propose fixes. Teaches an agent to:
+
+- Scope a review cohort by agent type, repo, and time window.
+- Cluster sessions by the task they were performing.
+- Audit tool choices and execution patterns against known waste signatures (re-reads, bash-grep, retry loops, unbounded payloads).
+- Quantify the token cost or error rate behind each pattern.
+- Tie each finding back to its **invocation surface** — prompt, skill description, conventions file, plan task, or tool allowlist — and propose a concrete edit.
+
+Use this when asked to reduce agent costs, improve results, or suggest new skills based on what you observe in past traces. Output is a structured report whose recommendations are each tied to a specific file or flag.
+
+### `thirdeye-filter`
+
+A directive used by the browser UI's [Ask panel](/docs/ui#ask-panel-agentic-filters) to translate natural-language queries ("long-lasting claude runs this week") into the structured filter JSON the UI applies to your sessions or search view. Installed automatically with the other skills; not normally invoked directly by you or your agents.
+
 ## Installing into a repo
 
 ```bash
 thirdeye skill list                                  # show bundled skill names
 thirdeye skill install                               # all skills → .agents/skills/
 thirdeye skill install .claude/skills                # custom parent dir
-thirdeye skill install --only use-thirdeye-evals     # just one
+thirdeye skill install --only thirdeye-review        # just one
 thirdeye skill install --force                       # replace existing entries
 ```
 
@@ -62,6 +78,6 @@ Any client that reads the `.agents/skills/` convention will discover the same fi
 
 ## Tips
 
-- **Install both skills together** unless you specifically don't want evals available — agents tend to chain "find a problem" → "grade the problem" naturally once both skills are on hand.
+- **Install them all together** unless you specifically want a subset — agents tend to chain "find a problem" → "grade the problem" → "review the cohort" naturally once the surfaces are on hand.
 - **Re-run `thirdeye skill install`** if you've moved or renamed your skills directory; it's idempotent and `--force` will replace stale entries.
 - **Audit what the skill does.** Skills are markdown — read them. They're at `.agents/skills/use-thirdeye/SKILL.md` (or wherever you installed them) and link out to the reference files for each workflow.
