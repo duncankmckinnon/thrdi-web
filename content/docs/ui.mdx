@@ -12,7 +12,13 @@ The preview above mirrors the sessions list at `/` — saved-views sidebar, filt
 
 ## Install
 
-The UI ships as an optional extra so the default `pip install thrdi` stays lean.
+The Homebrew package includes the browser UI and all of its dependencies:
+
+```bash
+brew install duncanmckinnon/tap/thirdeye
+```
+
+For Python installations, the UI ships as an optional extra so the default `pip install thrdi` stays lean:
 
 ```bash
 pip install 'thrdi[ui]'
@@ -107,7 +113,7 @@ Inside the session tree:
 
 ## Troubleshooting
 
-- **`ModuleNotFoundError: starlette`** — the `ui` extra isn't installed. Run `pip install 'thrdi[ui]'` (or `pipx inject thrdi starlette uvicorn jinja2`).
+- **`ModuleNotFoundError: starlette`** — a Python installation is missing the `ui` extra. Run `pip install 'thrdi[ui]'` (or `pipx inject thrdi starlette uvicorn jinja2`). Homebrew installs already include it.
 - **`OSError: [Errno 48] Address already in use`** — another process holds the port. Pass `--port` with a free port, or stop the other process.
 - **Browser didn't open** — pass `--no-browser` to suppress the auto-open and copy the printed URL manually. On headless machines, always use `--no-browser`.
 - **Live tail isn't updating** — confirm the session is still `open` (the session header shows status). Closed sessions render the full timeline but don't stream. Some restrictive corporate proxies break SSE; running the browser on the same host as the server avoids the proxy entirely.

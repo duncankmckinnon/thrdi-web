@@ -81,7 +81,7 @@ const features: { icon: ReactNode; title: string; description: ReactNode }[] = [
     ),
     title: "Evals as rubrics",
     description:
-      "Named directive rubrics graded by claude/codex/gemini as LLM-as-judge.",
+      "Named directive rubrics graded by an installed CLI agent as LLM-as-judge.",
   },
 ];
 
