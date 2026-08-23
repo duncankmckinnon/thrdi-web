@@ -41,7 +41,7 @@ const sessions: {
   },
   {
     sid: "7d12c9b3",
-    platform: "cursor",
+    platform: "claude",
     cwd: "wbcli-web",
     started: "2026-05-21 18:41",
     events: 23,
@@ -49,7 +49,7 @@ const sessions: {
   },
   {
     sid: "4e0f6b88",
-    platform: "gemini",
+    platform: "codex",
     cwd: "workbench",
     started: "2026-05-20 09:14",
     events: 12,

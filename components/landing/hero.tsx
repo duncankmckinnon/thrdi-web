@@ -44,7 +44,7 @@ export function Hero() {
         </div>
 
         <p className="hero-fade mx-auto mt-8 max-w-2xl text-lg leading-8 text-brand-text-secondary sm:text-xl">
-          Local-first observability for AI coding agents. No cloud. No SaaS. Just your filesystem.
+          Local-first observability for Claude Code and Codex, with optional live export to Pydantic Logfire.
         </p>
 
         {/* Install command */}
@@ -113,21 +113,21 @@ export function Hero() {
                     <td className="py-1 text-brand-text-primary">sess_3f9e2a</td>
                   </tr>
                   <tr className="border-b border-brand-bg-tertiary/50">
-                    <td className="py-1 pr-4 text-brand-accent-secondary">cursor</td>
+                    <td className="py-1 pr-4 text-brand-accent-secondary">codex</td>
                     <td className="py-1 pr-4 text-brand-text-muted">2026-05-22 09:31</td>
                     <td className="py-1 pr-4 text-brand-text-muted text-right">23</td>
                     <td className="py-1 pr-4 text-brand-text-muted">-</td>
                     <td className="py-1 text-brand-text-primary">sess_b8c402</td>
                   </tr>
                   <tr className="border-b border-brand-bg-tertiary/50">
-                    <td className="py-1 pr-4 text-brand-accent-secondary">codex</td>
+                    <td className="py-1 pr-4 text-brand-accent-secondary">claude</td>
                     <td className="py-1 pr-4 text-brand-text-muted">2026-05-21 18:55</td>
                     <td className="py-1 pr-4 text-brand-text-muted text-right">91</td>
                     <td className="py-1 pr-4 text-brand-accent-tertiary">refactor</td>
                     <td className="py-1 text-brand-text-primary">sess_71d9aa</td>
                   </tr>
                   <tr className="border-b border-brand-bg-tertiary/50">
-                    <td className="py-1 pr-4 text-brand-accent-secondary">gemini</td>
+                    <td className="py-1 pr-4 text-brand-accent-secondary">codex</td>
                     <td className="py-1 pr-4 text-brand-text-muted">2026-05-20 11:14</td>
                     <td className="py-1 pr-4 text-brand-text-muted text-right">12</td>
                     <td className="py-1 pr-4 text-brand-text-muted">-</td>
@@ -169,7 +169,7 @@ export function Hero() {
             <div className="mt-6">
               <div className="text-cyan-400 font-bold">━━━ Summary ━━━</div>
               <div className="mt-1 text-green-400">
-                {"  "}5 sessions across 4 platforms · 229 events captured
+                {"  "}5 sessions across 2 platforms · 229 events captured
               </div>
             </div>
           </div>

@@ -12,6 +12,7 @@ Every `thirdeye` subcommand. The `thirdeye` and `thrdi` binaries are aliases —
 |---------|-------------|
 | `thirdeye add --<platform>` | Register hooks so future agent sessions on that platform are captured. |
 | `thirdeye remove --<platform>` | Detach hooks for a platform (data on disk is untouched). |
+| `thirdeye logfire enable / status / disable` | Manage optional live export to Pydantic Logfire. |
 | `thirdeye list` | List recent sessions across all platforms, newest first. |
 | `thirdeye events <id>` | Print all events for a session. |
 | `thirdeye event <id> <seq>` | Print one event, fully expanded. |
@@ -43,13 +44,12 @@ Common flags available on most read commands: `--json` (parseable JSONL), `--tre
 
 ```
 thirdeye add --claude
-thirdeye add --cursor
 thirdeye add --codex
-thirdeye add --gemini
-thirdeye add --copilot
+thirdeye add --list
 ```
 
 Registers a hook so the next session on that platform is captured. Idempotent.
+`--list` prints the currently supported platforms and warns about stale Cursor or Gemini hooks. For Codex, `--force` replaces an existing `notify` program.
 
 ### `thirdeye remove`
 
@@ -58,6 +58,36 @@ thirdeye remove --<platform>
 ```
 
 Reverses the corresponding `add`. Captured data on disk is left in place.
+
+---
+
+## Pydantic Logfire
+
+See [Pydantic Logfire](/docs/logfire) for trace shape and behavior.
+
+### `thirdeye logfire enable`
+
+```
+thirdeye logfire enable --token <gateway-key> [--project NAME]
+```
+
+Persists the key and enables live export. Requires `pip install 'thrdi[logfire]'`.
+
+### `thirdeye logfire status`
+
+```
+thirdeye logfire status
+```
+
+Shows whether the package is installed and whether export, token, project, and active state are configured.
+
+### `thirdeye logfire disable`
+
+```
+thirdeye logfire disable
+```
+
+Stops export while retaining the saved key and project.
 
 ---
 
