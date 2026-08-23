@@ -8,7 +8,14 @@ thirdeye is local-first, but it can optionally mirror each captured Claude Code 
 
 ## Enable export
 
-Install the optional dependency, then save the Logfire gateway key for your project:
+If you installed thirdeye with Homebrew, Logfire support is already included. Save the gateway key for your project:
+
+```bash
+thirdeye logfire enable --token pylf_v1_... --project my-project
+thirdeye logfire status
+```
+
+For a Python installation, install the optional dependency first:
 
 ```bash
 pip install 'thrdi[logfire]'
@@ -62,7 +69,7 @@ Logfire's default secret scrubbing remains active. thirdeye exempts only the def
 
 ## Troubleshooting
 
-- **`package installed : False`.** Install the extra with `pip install 'thrdi[logfire]'` in the same environment that provides `thirdeye`.
+- **`package installed : False`.** Python installs need `pip install 'thrdi[logfire]'` in the same environment that provides `thirdeye`. Homebrew installs already include it.
 - **`active : False`.** Export is active only when the package is installed, export is enabled, and a token is saved.
 - **A turn does not appear immediately.** Export begins after a turn is completed or interrupted, and the detached worker may take a moment to flush.
 - **Export failures.** Run `thirdeye usage errors` to inspect the capture audit log without exposing failures to the agent hook.
