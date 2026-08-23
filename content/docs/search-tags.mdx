@@ -1,7 +1,7 @@
 ---
 title: Search & tags
 description: Slice your agent history by content, tag, platform, or time.
-order: 3
+order: 4
 ---
 
 `thirdeye search` does a substring scan across every captured event in your local store. Tags annotate individual events so you can build up a personal taxonomy — "review this later", "bug", "exemplar" — and then use those annotations as filters.
@@ -20,7 +20,7 @@ Every filter below works on `search`, `list`, and `events`:
 
 | Flag | Effect |
 |------|--------|
-| `--platform NAME` | Only sessions from this platform (`claude`, `cursor`, `codex`, `gemini`, `copilot`). |
+| `--platform NAME` | Only sessions from this platform (`claude` or `codex`). |
 | `--cwd PATH` | Only sessions started from this working directory. |
 | `--tag NAME` | Only events (or sessions containing events) with this tag. |
 | `--since DATE` | Events on or after this date. |

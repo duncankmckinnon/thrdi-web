@@ -1,6 +1,6 @@
 ---
 title: Tracing agents
-description: Attach thirdeye to Claude Code, Cursor, Codex, Gemini, and Copilot.
+description: Attach thirdeye to Claude Code or Codex and capture structured turns.
 order: 2
 ---
 
@@ -14,13 +14,16 @@ Enable any of these with `thirdeye add --<platform>`. Each one is idempotent and
 
 | Platform        | Command                  | What you should know                                                                                                          |
 |-----------------|--------------------------|-------------------------------------------------------------------------------------------------------------------------------|
-| **Claude Code** | `thirdeye add --claude`  | Captures full session lifecycle. Pairs with the `use-thirdeye`, `thirdeye-evals`, and `thirdeye-review` [agent skills](/docs/skills). |
-| **Cursor**      | `thirdeye add --cursor`  | Captures session lifecycle, prompts, shell, MCP, and file events. A thirdeye fault never blocks Cursor — failures are logged, not surfaced. |
-| **Codex**       | `thirdeye add --codex`   | Preserves Codex's `--sandbox read-only`. thirdeye observes; it does not relax the sandbox.                                    |
-| **Gemini**      | `thirdeye add --gemini`  | Gemini's `plan` / `default` / `yolo` approval modes pass through unchanged.                                                   |
-| **Copilot**     | `thirdeye add --copilot` | GitHub Copilot CLI.                                                                                                           |
+| **Claude Code** | `thirdeye add --claude`  | Captures the full session lifecycle and reconstructs every completed or interrupted turn, including nested subagents. Pairs with the bundled [agent skills](/docs/skills). |
+| **Codex**       | `thirdeye add --codex`   | Combines Codex notify and JSON hook events with rollout data to reconstruct turns, model calls, tool calls, permissions, token usage, and subagents. Use `--force` only to replace an existing notify program. |
 
 Once captured, every platform shares the same query surface: `thirdeye list / events / search / usage / tag / eval` all work identically across them.
+
+## Structured turn traces
+
+The tracing adapters assemble a whole turn before export: one user prompt through its final response, interruption, or error. Each turn includes its model calls, the tool calls requested by each model call, permission prompts, usage, and recursively nested subagent turns. This preserves parent-child relationships and real start/end timestamps instead of flattening hook events into an unordered timeline.
+
+Local capture requires no remote service. If you enable [Pydantic Logfire](/docs/logfire), the same completed-turn model is exported as a nested OpenTelemetry trace in a detached worker.
 
 ## Verify
 
@@ -39,4 +42,5 @@ For a deeper look, [agent skills](/docs/skills) walk an agent through inspecting
 
 - **No sessions appear after `add`.** `add` takes effect on the *next* agent run. Start a new session and check `thirdeye list` again.
 - **Duplicate hook entries.** Shouldn't happen — `add` is idempotent. If it does, run `thirdeye remove --<platform>` then `thirdeye add --<platform>` to reset.
+- **A removed Cursor or Gemini hook still runs.** Run `thirdeye add --list`; it reports stale hook commands that should be removed from those tools' config files.
 - **Usage rows missing.** See [Token usage](/docs/usage-tokens#troubleshooting); the usage sidecar is written by a separate path that may need `thirdeye usage reindex`.

@@ -1,7 +1,7 @@
 ---
 title: Token usage
 description: Per-turn input/output token counts captured automatically.
-order: 4
+order: 5
 ---
 
 thirdeye captures model name and token counts per turn into an append-only sidecar (`usage.jsonl`) and a global SQLite index (`usage.db`). Capture starts automatically on the next agent run after `thirdeye add` — there's nothing extra to enable.
@@ -41,7 +41,7 @@ thirdeye usage a3f2c8 --json | jq 'select(.output_tokens > 4000)'
 
 | Flag | Effect |
 |------|--------|
-| `--platform NAME` | Restrict to one platform (`claude`, `cursor`, `codex`, `gemini`, `copilot`). |
+| `--platform NAME` | Restrict to one platform (`claude` or `codex`). |
 | `--harness NAME` | Restrict to one harness (e.g. CLI vs. IDE shim). |
 | `--model SUBSTR` | Substring match against model name. |
 | `--since DATE` / `--until DATE` | Time window. |

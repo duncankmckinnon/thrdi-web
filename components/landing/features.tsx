@@ -10,9 +10,9 @@ const features: { icon: ReactNode; title: string; description: ReactNode }[] = [
         <path d="M16 3.13a4 4 0 0 1 0 7.75" />
       </svg>
     ),
-    title: "Multi-agent capture",
+    title: "Claude + Codex capture",
     description:
-      "Claude Code, Cursor, Codex, Gemini, Copilot — one unified history.",
+      "Two coding-agent harnesses, one unified local history and trace model.",
   },
   {
     icon: (
@@ -29,9 +29,24 @@ const features: { icon: ReactNode; title: string; description: ReactNode }[] = [
         <code className="rounded bg-brand-bg-tertiary px-1 py-0.5 font-mono text-xs text-brand-accent-tertiary">
           ~/.thirdeye/
         </code>
-        . No cloud, no telemetry, no account.
+        . No account or remote service required.
       </>
     ),
+  },
+  {
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 17V7" />
+        <path d="M4 12h5" />
+        <path d="M9 8v8" />
+        <path d="M9 12h5" />
+        <path d="M14 9v6" />
+        <path d="M14 12h6" />
+      </svg>
+    ),
+    title: "Pydantic Logfire export",
+    description:
+      "Optionally mirror completed turns as nested OpenTelemetry traces without adding hook latency.",
   },
   {
     icon: (
@@ -67,16 +82,6 @@ const features: { icon: ReactNode; title: string; description: ReactNode }[] = [
     title: "Evals as rubrics",
     description:
       "Named directive rubrics graded by claude/codex/gemini as LLM-as-judge.",
-  },
-  {
-    icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3Z" />
-      </svg>
-    ),
-    title: "Agent-friendly",
-    description:
-      "Skills ship with thirdeye so your agents can read their own history.",
   },
 ];
 

@@ -11,9 +11,9 @@ export function GET() {
 
   const content = `# thirdeye
 
-> Local-first observability CLI for AI coding agents. Trace, search, tag, and evaluate every session from Claude Code, Cursor, Codex, Gemini, and Copilot — all on your filesystem.
+> Local-first observability CLI for Claude Code and Codex, with optional live export to Pydantic Logfire.
 
-thirdeye (\`thrdi\` on PyPI, \`thirdeye\` on Homebrew) is a Python CLI that traces every agent session on your machine into a unified, searchable history stored on disk at \`~/.thirdeye/\`. No cloud. No SaaS. One CLI surfaces sessions from every major AI agent you use, with per-turn token usage captured to JSONL plus a SQLite index, and evals dispatched as LLM-as-judge rubrics against recorded sessions.
+thirdeye (\`thrdi\` on PyPI, \`thirdeye\` on Homebrew) captures Claude Code and Codex sessions into a unified, searchable history stored at \`~/.thirdeye/\`. Local storage is the default. An optional \`thrdi[logfire]\` extra mirrors completed turns to Pydantic Logfire as OpenTelemetry traces with agent-turn, model-call, tool-call, permission-request, and nested-subagent spans. Per-turn token usage is captured to JSONL plus a SQLite index, and evals can be dispatched as LLM-as-judge rubrics against recorded sessions.
 
 ## Documentation
 

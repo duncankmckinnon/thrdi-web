@@ -4,7 +4,7 @@ description: Install thirdeye and capture your first agent session.
 order: 1
 ---
 
-> **Local-first by design.** Every trace, tag, and eval lives on your filesystem under `~/.thirdeye/`. No cloud, no SaaS, no telemetry.
+> **Local-first by default.** Every trace, tag, and eval lives on your filesystem under `~/.thirdeye/`. Remote export is off unless you explicitly enable [Pydantic Logfire](/docs/logfire).
 
 ## Install
 
@@ -36,10 +36,7 @@ Attach thirdeye to whichever agent CLIs you use. Each `add` is idempotent — ru
 
 ```bash
 thirdeye add --claude        # Claude Code
-thirdeye add --cursor        # Cursor
 thirdeye add --codex         # OpenAI Codex CLI
-thirdeye add --gemini        # Gemini CLI
-thirdeye add --copilot       # GitHub Copilot CLI
 ```
 
 After the next agent run on that platform, a session will appear in `thirdeye list`. See [Tracing agents](/docs/tracing) for what each integration does under the hood and how to verify it's wired up.
@@ -64,7 +61,7 @@ A typical first look:
 $ thirdeye list --tree
 claude    a3f2c8b1   ~/code/thrdi-web      2026-05-20 14:22   running
 claude    91e4d20a   ~/code/thirdeye       2026-05-20 11:03   done
-cursor    7d12c9b3   ~/code/wbcli-web      2026-05-19 18:41   done
+codex     7d12c9b3   ~/code/wbcli-web      2026-05-19 18:41   done
 
 $ thirdeye tail a3f2c8 -n 3
 ```
@@ -75,10 +72,7 @@ Disable hooks for a platform without removing thirdeye itself:
 
 ```bash
 thirdeye remove --claude
-thirdeye remove --cursor
 thirdeye remove --codex
-thirdeye remove --gemini
-thirdeye remove --copilot
 ```
 
 Existing session data on disk is untouched — you can re-enable later and pick up where you left off.
@@ -86,6 +80,7 @@ Existing session data on disk is untouched — you can re-enable later and pick 
 ## What's next
 
 - **[Tracing agents](/docs/tracing)** — per-platform install details and verification steps.
+- **[Pydantic Logfire](/docs/logfire)** — optionally mirror structured turn traces live.
 - **[Search & tags](/docs/search-tags)** — slice your history by content, tag, platform, or time.
 - **[Token usage](/docs/usage-tokens)** — per-turn input/output token rollups.
 - **[Evaluations](/docs/evals)** — grade recorded sessions with LLM-as-judge rubrics.

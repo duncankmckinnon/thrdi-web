@@ -23,7 +23,7 @@ export const viewport = {
 };
 
 const siteDescription =
-  "Local-first observability for AI coding agents. Trace, search, tag, and evaluate every session from Claude Code, Cursor, Codex, Gemini, and Copilot — all on your filesystem.";
+  "Local-first observability for Claude Code and Codex. Keep traces on your filesystem, or mirror structured turn traces to Pydantic Logfire.";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://thrdi.com"),
@@ -41,9 +41,8 @@ export const metadata: Metadata = {
     "local-first",
     "Claude Code traces",
     "Codex traces",
-    "Gemini CLI traces",
-    "Cursor traces",
-    "Copilot traces",
+    "Pydantic Logfire",
+    "OpenTelemetry",
     "LLM evals",
     "agent debugging",
   ],

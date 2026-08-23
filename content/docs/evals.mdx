@@ -1,7 +1,7 @@
 ---
 title: Evaluations
 description: LLM-as-judge against recorded sessions, with custom rubrics.
-order: 5
+order: 6
 ---
 
 thirdeye lets you grade a recorded session by dispatching one of your installed CLI agents (`claude`, `codex`, or `gemini`) as an LLM-as-judge. Rubrics — called **eval definitions** — are named directive text bundled with sensible defaults and editable per-user. Results are append-only at `<session>/evals.jsonl` and per-turn findings anchor to the event `seq` they comment on, so `thirdeye events <id>` annotates its timeline with the findings inline.
