@@ -35,13 +35,11 @@ export function CtaFooter() {
           <p className="mt-2 text-sm leading-relaxed text-brand-text-secondary">
             Dispatch parallel agents and watch the trail unfold.
           </p>
-          <a
-            href="https://wbcli.com"
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href="/docs/workbench"
             className="mt-6 inline-flex items-center gap-2 rounded-lg border border-brand-accent-secondary/40 px-6 py-3 text-sm font-semibold text-brand-accent-tertiary transition-colors hover:bg-brand-accent-secondary/10 hover:border-brand-accent-secondary"
           >
-            Visit wbcli.com
+            Set up the integration
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="14"
@@ -54,10 +52,9 @@ export function CtaFooter() {
               strokeLinejoin="round"
               aria-hidden="true"
             >
-              <path d="M7 7h10v10" />
-              <path d="M7 17 17 7" />
+              <path d="m9 18 6-6-6-6" />
             </svg>
-          </a>
+          </Link>
         </div>
       </div>
     </section>

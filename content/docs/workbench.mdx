@@ -1,0 +1,145 @@
+---
+title: Workbench integration
+description: Group workbench agent traces by plan, wave, task, role, and pipeline step with automatic tags.
+order: 9
+---
+
+[workbench](https://wbcli.com) dispatches coding agents through implementation, testing, review, fix, and wrap-up stages. Each invocation becomes a separate Claude Code or Codex session. thirdeye can tag those sessions automatically so the complete run remains easy to query as one plan.
+
+## Set up the integration
+
+Install both CLIs. The Homebrew package for thirdeye includes its browser UI and Pydantic Logfire support:
+
+```bash
+brew install duncanmckinnon/tap/workbench
+brew install duncanmckinnon/tap/thirdeye
+```
+
+Register thirdeye hooks for every supported harness your workbench profile uses:
+
+```bash
+thirdeye add --claude
+thirdeye add --codex
+```
+
+Then allow thirdeye to capture workbench's metadata variables and start workbench from the same shell:
+
+```bash
+export THIRDEYE_CAPTURE_ENV='WB_*'
+wb run my-plan
+```
+
+Add the export to your shell profile to enable it permanently. The pattern captures only variables beginning with `WB_`; thirdeye rejects a bare `*` so the entire environment cannot be captured accidentally.
+
+Workbench enables `--trace` and `--trace-env` by default, so no workbench flag is required. Its `--trace-prompt` option is separate from automatic tagging and can remain off.
+
+thirdeye currently captures workbench roles assigned to Claude Code or Codex. Roles assigned to another harness will continue to run, but their sessions will not appear in thirdeye.
+
+## Workbench metadata tags
+
+Workbench supplies five environment variables to task-pipeline agents. thirdeye lowercases their values, removes the leading `WB_` from the field name, and writes the resulting tags on the session-start event:
+
+| Workbench variable | Example value | thirdeye tag | Meaning |
+|---|---|---|---|
+| `WB_PLAN` | `auth-refactor` | `plan-auth-refactor` | Plan folder slug under `.workbench/`. |
+| `WB_WAVE` | `2` | `wave-2` | Wave containing the task. |
+| `WB_TASK` | `task-3` | `task-task-3` | Task id. The repeated `task-` is the field prefix plus the value. |
+| `WB_AGENT` | `tester` | `agent-tester` | Workbench role for this invocation. |
+| `WB_STEP` | `test#1` | `step-test#1` | Exact pipeline stage and attempt. |
+
+Most task sessions receive all five. Standalone stages such as planning, final review, and PR writing have no wave or task, so only the applicable metadata becomes tags.
+
+Spaces and unsupported punctuation in values become dashes. `_`, `.`, `-`, and `#` are preserved. A derived tag is skipped if it is invalid or longer than 64 characters.
+
+## Tags for each pipeline step
+
+Use the agent tag to select a role across attempts, or the step tag for an exact stage:
+
+| Workbench stage | Agent tag | Step tag |
+|---|---|---|
+| Plan authoring with `wb plan` | `agent-planner` | `step-plan` |
+| Implementation | `agent-implementor` | `step-implement` |
+| TDD: write failing tests | `agent-tester` | `step-tdd-test` |
+| TDD: implement until tests pass | `agent-implementor` | `step-tdd-implement` |
+| Test attempt N | `agent-tester` | `step-test#N` |
+| Fix after test attempt N | `agent-fixer` | `step-test-fix#N` |
+| Task review attempt N | `agent-reviewer` | `step-review#N` |
+| Fix after task review N | `agent-fixer` | `step-review-fix#N` |
+| Merge-conflict resolution | `agent-merger` | `step-merge` |
+| Final-review requirements summary | `agent-summarizer` | `step-requirements` |
+| Final branch review attempt N | `agent-branch_reviewer` | `step-review#N` |
+| Final branch-review fix N | `agent-fixer` | `step-fix#N` |
+| PR body generation | `agent-pr_writer` | `step-pr` |
+
+Task review and final branch review both use `step-review#N`. Combine the step with `agent-reviewer` or `agent-branch_reviewer` to distinguish them.
+
+Quote tags containing `#` in shell commands; many shells otherwise treat the remainder as a comment.
+
+## Filter workbench traces
+
+Repeated `--tag` filters use AND semantics. Start with the plan tag, then narrow by task, wave, role, or step:
+
+```bash
+# Every captured session belonging to a plan.
+thirdeye list --tag plan-auth-refactor --tree
+
+# Every session for task 3.
+thirdeye list \
+  --tag plan-auth-refactor \
+  --tag task-task-3 \
+  --tree
+
+# First test attempts in wave 2.
+thirdeye list \
+  --tag plan-auth-refactor \
+  --tag wave-2 \
+  --tag 'step-test#1' \
+  --tree
+
+# Task reviewers only.
+thirdeye list \
+  --tag plan-auth-refactor \
+  --tag agent-reviewer \
+  --tree
+
+# The second final branch-review attempt.
+thirdeye list \
+  --tag plan-auth-refactor \
+  --tag agent-branch_reviewer \
+  --tag 'step-review#2' \
+  --tree
+```
+
+Use `thirdeye tags` to inspect the global tag inventory. `thirdeye tag <session-id> --list` shows the tags and event sequence for one session. The same automatic tags appear in the [browser UI](/docs/ui) session filters.
+
+## Disable or customize metadata
+
+Disable environment metadata for one workbench run with:
+
+```bash
+wb run my-plan --no-trace-env
+
+# Disable all workbench trace metadata, including optional prompt metadata.
+wb run my-plan --no-trace
+```
+
+The equivalent plan frontmatter is:
+
+```yaml
+---
+trace: true
+trace_env: true
+---
+```
+
+Built-in workbench adapters inject metadata by default. For a custom adapter in `.workbench/agents.yaml`, set `inject_env: true`; custom adapters default to not receiving environment metadata.
+
+## Troubleshooting
+
+- **Sessions appear without workbench tags.** Verify that `THIRDEYE_CAPTURE_ENV='WB_*'` is exported in the shell that starts `wb`, and that the run does not use `--no-trace` or `--no-trace-env`.
+- **No sessions appear.** Register the harness with `thirdeye add --claude` or `thirdeye add --codex`, then start a new workbench run.
+- **Only some roles appear.** Inspect the effective workbench profile. thirdeye captures Claude Code and Codex, so roles assigned to other harnesses are not recorded.
+- **A custom adapter has no tags.** Set `inject_env: true` in its workbench adapter configuration.
+- **A review query mixes task and final review.** Add `agent-reviewer` for task review or `agent-branch_reviewer` for final review.
+
+See the [workbench thirdeye integration guide](https://wbcli.com/docs/thirdeye) for the workbench-side configuration reference.

@@ -78,3 +78,5 @@ thirdeye search "" --tag audit --json \
 - **`thirdeye tags`** is the discovery command — run it first when you've forgotten what tags you're already using.
 - **Combine filters freely.** `--platform claude --cwd ~/code/thrdi-web --tag review --since 2026-05-01` is a valid drill-down.
 - **`--json` everywhere.** Almost every read command emits JSONL with `--json` so you can pipe into `jq`, `awk`, or another tool.
+
+Running parallel agents with workbench? See [Workbench integration](/docs/workbench) to generate plan, wave, task, role, and pipeline-step tags automatically.
