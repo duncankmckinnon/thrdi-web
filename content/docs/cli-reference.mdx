@@ -32,7 +32,7 @@ Every `thirdeye` subcommand. The `thirdeye` and `thrdi` binaries are aliases —
 | `thirdeye eval status` | Show background eval jobs. |
 | `thirdeye ui` | Launch the local browser UI (see [Browser UI](/docs/ui)). |
 | `thirdeye views list / save / delete` | Manage saved filter views used by the UI sidebar. |
-| `thirdeye skill list / install` | Manage the bundled agent skills (see [Agent skills](/docs/skills)). |
+| `thirdeye skills list / add` | Manage the bundled agent skills (see [Agent skills](/docs/skills)). |
 
 Common flags available on most read commands: `--json` (parseable JSONL), `--tree` (human-readable), `--platform`, `--cwd`, `--tag`, `--since`, `--until`.
 
@@ -314,22 +314,32 @@ Manage saved filter views from the CLI. Views are persisted at `<thirdeye_home>/
 
 See [Agent skills](/docs/skills) for usage patterns.
 
-### `thirdeye skill list`
+### `thirdeye skills list`
 
 ```
-thirdeye skill list
+thirdeye skills list
 ```
 
 Print bundled skill names.
 
-### `thirdeye skill install`
+### `thirdeye skills add`
 
 ```
-thirdeye skill install [PARENT_DIR]
-                       [--only NAME] [--force]
+thirdeye skills add [-p PATH | --claude | --codex]
+                    [--only NAME] [--force]
 ```
 
-Install bundled skills as symlinks. Default parent directory is `.agents/skills/`.
+Install bundled skills as symlinks, one directory per skill. With no target flag the destination is `.agents/skills/`.
+
+| Flag | Effect |
+|---|---|
+| `-p`, `--path PATH` | Install into one custom skills folder — any relative or absolute path. Cannot be combined with `--claude` or `--codex`. |
+| `--claude` | Install into `.claude/skills`. |
+| `--codex` | Install into `.codex/skills`. |
+| `--only NAME` | Install only the named skill. Repeatable; defaults to all bundled skills. |
+| `--force` | Replace an existing entry at the destination. |
+
+`--claude` and `--codex` may be combined to install into both in one run. Use `-p ~/.claude/skills` to install user-level so the skills resolve in every repo.
 
 ---
 

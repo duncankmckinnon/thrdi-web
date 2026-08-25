@@ -4,7 +4,11 @@ description: Let your agents inspect, search, and evaluate their own history.
 order: 8
 ---
 
-thirdeye ships four Claude-Code-format skills so the agents you trace can also *use* their history. Installed once into a repo, they're discoverable by Claude Code, Cursor, and any other client that reads the `.agents/skills/` or `.claude/skills/` conventions.
+<a href="/downloads/thirdeye-skills.zip" download className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-indigo-500 to-violet-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg no-underline hover:brightness-110 transition-all mb-8">
+  Download All Skills
+</a>
+
+thirdeye ships five Claude-Code-format skills so the agents you trace can also *use* their history. Installed once into a repo, they're discoverable by Claude Code, Cursor, and any other client that reads the `.agents/skills/` or `.claude/skills/` conventions.
 
 ## The bundled skills
 
@@ -44,23 +48,131 @@ A workflow for auditing *other* agents' traces to find inefficiencies and propos
 
 Use this when asked to reduce agent costs, improve results, or suggest new skills based on what you observe in past traces. Output is a structured report whose recommendations are each tied to a specific file or flag.
 
+### `thirdeye-logfire`
+
+Setup and diagnostics for the optional [Logfire export](/docs/logfire). Teaches an agent to:
+
+- Check export health with `thirdeye logfire status`.
+- Install the `thrdi[logfire]` extra and enable export with a project write token.
+- Connect the Logfire MCP server for querying exported traces.
+- Troubleshoot missing spans and disable export cleanly.
+
+It handles thirdeye's own export path only — it won't instrument an unrelated application with the Logfire SDK.
+
 ### `thirdeye-filter`
 
 A directive used by the browser UI's [Ask panel](/docs/ui#ask-panel-agentic-filters) to translate natural-language queries ("long-lasting claude runs this week") into the structured filter JSON the UI applies to your sessions or search view. Installed automatically with the other skills; not normally invoked directly by you or your agents.
 
+## Installing Skills from the Download
+
+If you don't have thirdeye installed yet, you can bootstrap the process by downloading the skills and placing them manually.
+
+1. **Download** the skills zip using the button above
+
+2. **Unzip** into your project's `.agents/skills/` directory:
+
+```bash
+mkdir -p .agents/skills
+unzip thirdeye-skills.zip -d .agents/skills/
+```
+
+This creates:
+
+```
+.agents/skills/
+├── use-thirdeye/
+│   ├── SKILL.md
+│   └── references/
+├── thirdeye-evals/
+│   ├── SKILL.md
+│   └── references/
+├── thirdeye-review/
+│   ├── SKILL.md
+│   └── references/
+├── thirdeye-logfire/
+│   ├── SKILL.md
+│   └── references/
+└── thirdeye-filter/
+    └── SKILL.md
+```
+
+3. **For Claude Code users**, also copy to `.claude/skills/`:
+
+```bash
+mkdir -p .claude/skills
+cp -r .agents/skills/* .claude/skills/
+```
+
+### Unzipping anywhere
+
+The zip has no fixed home — it expands to one directory per skill, so any folder your client scans for skills is a valid destination. Unzip it user-level to get the skills in every repo at once:
+
+```bash
+mkdir -p ~/.claude/skills
+unzip thirdeye-skills.zip -d ~/.claude/skills/
+```
+
+Or pick a subset by unzipping only the paths you want:
+
+```bash
+unzip thirdeye-skills.zip 'use-thirdeye/*' 'thirdeye-evals/*' -d .agents/skills/
+```
+
+Copies from the zip are frozen at download time — they won't refresh when you upgrade thirdeye. Once thirdeye is installed, prefer [`thirdeye skills add`](#installing-into-a-repo), which symlinks instead so the content tracks your installed version.
+
 ## Installing into a repo
 
 ```bash
-thirdeye skill list                                  # show bundled skill names
-thirdeye skill install                               # all skills → .agents/skills/
-thirdeye skill install .claude/skills                # custom parent dir
-thirdeye skill install --only thirdeye-review        # just one
-thirdeye skill install --force                       # replace existing entries
+thirdeye skills list                              # show bundled skill names
+thirdeye skills add                               # all skills → .agents/skills/
+thirdeye skills add --claude                      # → .claude/skills/
+thirdeye skills add --codex                       # → .codex/skills/
+thirdeye skills add --claude --codex              # both at once
+thirdeye skills add --only thirdeye-review        # just one
+thirdeye skills add --force                       # replace existing entries
 ```
 
-By default `thirdeye skill install` writes into `.agents/skills/` for cross-client discoverability. Pass a path argument to target a different convention (e.g. `.claude/skills` if you only use Claude Code).
+With no target flag, `thirdeye skills add` writes into `.agents/skills/` for cross-client discoverability. `--claude` and `--codex` select the client-specific conventions instead, and they can be combined to install into both in a single run.
 
-### Symlinks, not copies
+| Flag | Effect |
+|---|---|
+| `-p`, `--path <dir>` | Install into one custom skills folder (see [below](#installing-anywhere)). Cannot be combined with `--claude` or `--codex`. |
+| `--claude` | Install into `.claude/skills`. |
+| `--codex` | Install into `.codex/skills`. |
+| `--only <name>` | Install only the named skill. Repeatable; defaults to all bundled skills. |
+| `--force` | Replace an existing entry at the destination. |
+
+## Installing anywhere
+
+`-p/--path` takes any directory — relative or absolute, inside the repo or outside it — and installs each skill as `<dir>/<skill-name>`. Parent directories are created for you.
+
+```bash
+thirdeye skills add -p ~/.claude/skills           # user-level, every repo
+thirdeye skills add -p ~/.codex/skills            # user-level, Codex
+thirdeye skills add -p /srv/shared/agent-skills   # a shared location
+thirdeye skills add -p ../sibling-repo/.agents/skills
+```
+
+Installing to a user-level path makes the skills available in **every** project without a per-repo install, which is usually what you want if you use thirdeye across many repos:
+
+```bash
+thirdeye skills add -p ~/.claude/skills --force
+```
+
+`-p/--path` accepts a single folder and can't be combined with `--claude`/`--codex` — run it once per destination if you need several:
+
+```bash
+thirdeye skills add -p ~/.claude/skills
+thirdeye skills add -p ~/.codex/skills
+```
+
+It composes with the other flags as expected:
+
+```bash
+thirdeye skills add -p ~/.claude/skills --only use-thirdeye --only thirdeye-evals
+```
+
+## Symlinks, not copies
 
 Skills install as **symlinks** pointing at the bundled skill content inside the installed thirdeye package. So when you upgrade thirdeye (`brew upgrade thirdeye` or `pipx upgrade thrdi`), the skill content refreshes automatically in every repo that has them installed — no per-repo reinstall required.
 
@@ -79,5 +191,5 @@ Any client that reads the `.agents/skills/` convention will discover the same fi
 ## Tips
 
 - **Install them all together** unless you specifically want a subset — agents tend to chain "find a problem" → "grade the problem" → "review the cohort" naturally once the surfaces are on hand.
-- **Re-run `thirdeye skill install`** if you've moved or renamed your skills directory; it's idempotent and `--force` will replace stale entries.
+- **Re-run `thirdeye skills add`** if you've moved or renamed your skills directory; it's idempotent and `--force` will replace stale entries.
 - **Audit what the skill does.** Skills are markdown — read them. They're at `.agents/skills/use-thirdeye/SKILL.md` (or wherever you installed them) and link out to the reference files for each workflow.
