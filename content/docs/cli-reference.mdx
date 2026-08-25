@@ -68,7 +68,7 @@ See [Pydantic Logfire](/docs/logfire) for trace shape and behavior.
 ### `thirdeye logfire enable`
 
 ```
-thirdeye logfire enable --token <gateway-key> [--project NAME]
+thirdeye logfire enable --token <gateway-key>
 ```
 
 Persists the key and enables live export. Python installs require `pip install 'thrdi[logfire]'`; Homebrew includes Logfire support.
@@ -79,7 +79,7 @@ Persists the key and enables live export. Python installs require `pip install '
 thirdeye logfire status
 ```
 
-Shows whether the package is installed and whether export, token, project, and active state are configured.
+Shows whether the package is installed and whether export, token, and active state are configured.
 
 ### `thirdeye logfire disable`
 
@@ -87,7 +87,7 @@ Shows whether the package is installed and whether export, token, project, and a
 thirdeye logfire disable
 ```
 
-Stops export while retaining the saved key and project.
+Stops export while retaining the saved key.
 
 ---
 
