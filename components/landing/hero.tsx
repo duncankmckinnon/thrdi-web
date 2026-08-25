@@ -22,13 +22,13 @@ export function Hero() {
       <div className="mx-auto max-w-5xl text-center">
         <h1 className="text-4xl font-bold tracking-tight sm:text-6xl lg:text-7xl">
           <span className="hero-line-1 block pb-2 bg-gradient-to-r from-brand-accent-primary to-brand-accent-secondary bg-clip-text text-transparent">
-            Trace all your agents.
+            Trace all your agents
           </span>
           <span className="hero-line-2 block py-2">
-            Use all your traces.
+            Use all your traces
           </span>
           <span className="hero-line-3 block pt-2 pb-4 bg-gradient-to-r from-brand-accent-secondary to-brand-accent-tertiary bg-clip-text text-transparent">
-            Improve all your workflows.
+            Improve all your workflows
           </span>
         </h1>
 
@@ -44,7 +44,7 @@ export function Hero() {
         </div>
 
         <p className="hero-fade mx-auto mt-8 max-w-2xl text-lg leading-8 text-brand-text-secondary sm:text-xl">
-          Local-first observability for Claude Code and Codex, with optional live export to Pydantic Logfire.
+          Comprehensive observability and analytics for your local coding harness, with Pydantic Logfire integration
         </p>
 
         {/* Install command */}
