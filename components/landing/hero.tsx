@@ -34,11 +34,11 @@ export function Hero() {
 
         <div className="hero-fade mt-10">
           <Image
-            src="/thrdi-logo.png"
+            src="/thrdi-logo-1.png"
             alt="thirdeye logo"
-            width={400}
-            height={400}
-            className="mx-auto max-w-xs w-full h-auto"
+            width={1402}
+            height={1122}
+            className="mx-auto max-w-sm w-full h-auto"
             priority
           />
         </div>
