@@ -19,16 +19,16 @@ export function Hero() {
       {/* Background gradient */}
       <div className="absolute inset-0 -z-10 bg-gradient-to-b from-brand-bg-primary via-brand-bg-primary to-brand-bg-secondary" />
 
-      <div className="mx-auto max-w-4xl text-center">
+      <div className="mx-auto max-w-5xl text-center">
         <h1 className="text-4xl font-bold tracking-tight sm:text-6xl lg:text-7xl">
           <span className="hero-line-1 block pb-2 bg-gradient-to-r from-brand-accent-primary to-brand-accent-secondary bg-clip-text text-transparent">
-            All your agents.
+            Trace all your agents.
           </span>
           <span className="hero-line-2 block py-2">
-            Every trace, every eval.
+            Use all your traces.
           </span>
           <span className="hero-line-3 block pt-2 pb-4 bg-gradient-to-r from-brand-accent-secondary to-brand-accent-tertiary bg-clip-text text-transparent">
-            On your machine.
+            Improve all your workflows.
           </span>
         </h1>
 
