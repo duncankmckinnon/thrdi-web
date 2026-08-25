@@ -44,7 +44,7 @@ export function Hero() {
         </div>
 
         <p className="hero-fade mx-auto mt-8 max-w-2xl text-lg leading-8 text-brand-text-secondary sm:text-xl">
-          Comprehensive observability and analytics for your local coding harness, with Pydantic Logfire integration
+          Comprehensive observability and agent-oriented analytics for your local harness, with Pydantic Logfire integration
         </p>
 
         {/* Install command */}
