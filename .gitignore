@@ -35,6 +35,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# generated downloads
+public/downloads/
+
 # superpowers
 .superpowers
 .workbench

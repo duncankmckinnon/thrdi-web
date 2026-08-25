@@ -24,6 +24,7 @@ ${docLinks}
 - [GitHub Repository](https://github.com/duncankmckinnon/thirdeye)
 - [PyPI Package](https://pypi.org/project/thrdi/)
 - [Homebrew Tap](https://github.com/duncankmckinnon/homebrew-tap)
+- [Skills Download](${BASE_URL}/downloads/thirdeye-skills.zip)
 - [Sibling Project: workbench](https://wbcli.com) — multi-agent orchestrator
 `;
 
