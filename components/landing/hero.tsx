@@ -87,7 +87,7 @@ export function Hero() {
       </div>
 
       {/* Terminal mockup */}
-      <div className="hero-fade mx-auto mt-16 max-w-6xl">
+      <div className="hero-fade mx-auto mt-16 max-w-6xl xl:max-w-7xl">
         <div className="overflow-hidden rounded-xl border border-brand-bg-tertiary bg-brand-bg-secondary shadow-2xl">
           {/* Terminal header */}
           <div className="flex items-center gap-2 border-b border-brand-bg-tertiary px-4 py-3">

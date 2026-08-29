@@ -45,7 +45,7 @@ const columns = [
 export function Footer() {
   return (
     <footer className="border-t border-brand-bg-tertiary bg-brand-bg-primary">
-      <div className="mx-auto max-w-6xl px-4 py-12">
+      <div className="mx-auto max-w-6xl px-4 py-12 xl:max-w-7xl">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-3">
           {columns.map((col) => (
             <div key={col.title}>
