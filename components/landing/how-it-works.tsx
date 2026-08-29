@@ -45,7 +45,7 @@ const steps: { number: string; title: string; description: ReactNode; code: stri
 export function HowItWorks() {
   return (
     <section className="px-6 py-24 lg:px-8">
-      <div className="mx-auto max-w-5xl">
+      <div className="mx-auto max-w-5xl lg:max-w-6xl xl:max-w-7xl 2xl:max-w-[96rem]">
         <div className="text-center">
           <h2 className="text-3xl font-bold sm:text-4xl">How it works</h2>
         </div>
@@ -54,7 +54,7 @@ export function HowItWorks() {
           {/* Connecting line — desktop only */}
           <div className="absolute left-0 right-0 top-7 hidden h-px bg-gradient-to-r from-transparent via-brand-bg-tertiary to-transparent lg:block" />
 
-          <div className="grid grid-cols-1 gap-12 lg:grid-cols-3 lg:gap-8">
+          <div className="grid grid-cols-1 gap-12 lg:grid-cols-3 lg:gap-8 2xl:gap-6">
             {steps.map((step, index) => (
               <div key={step.number} className="relative flex flex-col items-center text-center">
                 {/* Step number badge */}
@@ -78,7 +78,7 @@ export function HowItWorks() {
                 <p className="mt-2 text-sm leading-relaxed text-brand-text-secondary">
                   {step.description}
                 </p>
-                <div className="mt-4 w-full overflow-x-auto rounded-lg border border-brand-bg-tertiary bg-brand-bg-secondary px-3 py-2 text-left font-mono text-xs">
+                <div className="mt-4 w-full overflow-x-auto rounded-lg border border-brand-bg-tertiary bg-brand-bg-secondary px-3 py-2 text-left font-mono text-xs [@media(min-width:1600px)]:whitespace-nowrap">
                   <span className="text-brand-text-muted">$ </span>
                   <span className="text-brand-text-primary">{step.code}</span>
                 </div>

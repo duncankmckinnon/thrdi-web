@@ -7,7 +7,7 @@ export function CtaFooter() {
       {/* Gradient background */}
       <div className="absolute inset-0 -z-10 bg-gradient-to-t from-brand-bg-primary via-brand-bg-secondary to-brand-bg-primary" />
 
-      <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-2">
+      <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-2 xl:max-w-6xl">
         {/* Card 1 — Try thirdeye */}
         <div className="flex flex-col items-center rounded-2xl border border-brand-bg-tertiary bg-brand-bg-secondary p-8 text-center">
           <h3 className="text-2xl font-bold text-brand-text-primary">

@@ -1,7 +1,7 @@
 export function CodeExample() {
   return (
     <section className="px-6 py-24 lg:px-8">
-      <div className="mx-auto max-w-6xl">
+      <div className="mx-auto max-w-6xl xl:max-w-7xl">
         <div className="text-center">
           <h2 className="text-3xl font-bold sm:text-4xl">
             From session to insight in two commands
