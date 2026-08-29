@@ -118,7 +118,7 @@ export function Hero() {
                 </thead>
                 <tbody>
                   <tr className="border-b border-brand-bg-tertiary/50">
-                    <td className="py-1 pr-4 text-brand-accent-secondary">claude</td>
+                    <td className="py-1 pr-4 text-brand-accent-secondary">cursor</td>
                     <td className="py-1 pr-4 text-brand-text-muted">2026-05-22 14:08</td>
                     <td className="py-1 pr-4 text-brand-text-muted text-right">47</td>
                     <td className="py-1 pr-4 text-brand-accent-tertiary">review,bug</td>
@@ -181,7 +181,7 @@ export function Hero() {
             <div className="mt-6">
               <div className="text-cyan-400 font-bold">━━━ Summary ━━━</div>
               <div className="mt-1 text-green-400">
-                {"  "}5 sessions across 2 platforms · 229 events captured
+                {"  "}5 sessions across 3 platforms · 229 events captured
               </div>
             </div>
           </div>

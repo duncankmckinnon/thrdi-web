@@ -8,7 +8,7 @@ import { CtaFooter } from "@/components/landing/cta-footer";
 export const metadata: Metadata = {
   title: "thirdeye — Trace every agent session, locally",
   description:
-    "Local-first observability for Claude Code and Codex. Keep traces on your filesystem, or mirror structured turn traces to Pydantic Logfire.",
+    "Local-first observability for Claude Code, Codex, and Cursor. Keep traces on your filesystem, or mirror structured turn traces to Pydantic Logfire.",
 };
 
 export default function LandingPage() {

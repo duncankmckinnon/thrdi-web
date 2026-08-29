@@ -45,11 +45,12 @@ Common flags available on most read commands: `--json` (parseable JSONL), `--tre
 ```
 thirdeye add --claude
 thirdeye add --codex
+thirdeye add --cursor
 thirdeye add --list
 ```
 
 Registers a hook so the next session on that platform is captured. Idempotent.
-`--list` prints the currently supported platforms and warns about stale Cursor or Gemini hooks. For Codex, `--force` replaces an existing `notify` program.
+`--list` prints the currently supported platforms and warns about stale hooks from removed platforms. Cursor installs hooks for both its IDE and CLI in `~/.cursor/hooks.json`. For Codex, `--force` replaces an existing `notify` program.
 
 ### `thirdeye remove`
 

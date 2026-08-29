@@ -10,9 +10,9 @@ const features: { icon: ReactNode; title: string; description: ReactNode }[] = [
         <path d="M16 3.13a4 4 0 0 1 0 7.75" />
       </svg>
     ),
-    title: "Claude + Codex capture",
+    title: "Claude + Codex + Cursor capture",
     description:
-      "Two coding-agent harnesses, one unified local history and trace model.",
+      "Three coding-agent harnesses, one unified local history and trace model.",
   },
   {
     icon: (

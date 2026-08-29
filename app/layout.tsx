@@ -23,7 +23,7 @@ export const viewport = {
 };
 
 const siteDescription =
-  "Local-first observability for Claude Code and Codex. Keep traces on your filesystem, or mirror structured turn traces to Pydantic Logfire.";
+  "Local-first observability for Claude Code, Codex, and Cursor. Keep traces on your filesystem, or mirror structured turn traces to Pydantic Logfire.";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://thrdi.com"),
@@ -41,6 +41,7 @@ export const metadata: Metadata = {
     "local-first",
     "Claude Code traces",
     "Codex traces",
+    "Cursor traces",
     "Pydantic Logfire",
     "OpenTelemetry",
     "LLM evals",

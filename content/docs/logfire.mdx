@@ -1,10 +1,10 @@
 ---
 title: Pydantic Logfire
-description: Mirror completed Claude Code and Codex turns as nested OpenTelemetry traces.
+description: Mirror completed Claude Code, Codex, and Cursor turns as nested OpenTelemetry traces.
 order: 3
 ---
 
-thirdeye is local-first, but it can optionally mirror each captured Claude Code or Codex session to [Pydantic Logfire](https://pydantic.dev/logfire). Export is live once enabled; there is no separate batch-export step.
+thirdeye is local-first, but it can optionally mirror each captured Claude Code, Codex, or Cursor session to [Pydantic Logfire](https://pydantic.dev/logfire). Export is live once enabled; there is no separate batch-export step.
 
 ## Enable export
 
@@ -33,7 +33,7 @@ thirdeye logfire disable
 
 ## Trace shape
 
-Each thirdeye session becomes one Logfire trace, searchable by `gen_ai.conversation.id` and separated by `claude` or `codex` service name.
+Each thirdeye session becomes one Logfire trace, searchable by `gen_ai.conversation.id` and separated by `claude`, `codex`, or `cursor` service name.
 
 ```mermaid
 graph TD
@@ -53,7 +53,7 @@ graph TD
 - Permission requests sit directly under their turn as point-in-time spans.
 - Subagent turns nest recursively and preserve their own model and tool-call trees.
 
-Claude Code can produce multiple model-call spans within one turn. Codex reconstructs its model calls and tool children from the completed rollout, deduplicating cumulative token reports before calculating usage.
+Claude Code can produce multiple model-call spans within one turn. Codex reconstructs its model calls and tool children from the completed rollout, deduplicating cumulative token reports before calculating usage. Cursor reconstructs generations from IDE or CLI hooks, pairing shell and MCP callbacks while recording file operations, generic tools, and completed subagents.
 
 ## Runtime behavior
 

@@ -24,10 +24,12 @@ export function CodeExample() {
                 <span className="text-brand-text-primary">--tag review</span>
               </div>
               <div className="mt-2 text-brand-text-secondary">
-                <span className="text-brand-text-primary">3</span> result(s) —{" "}
+                <span className="text-brand-text-primary">4</span> result(s) —{" "}
                 <span className="text-brand-accent-secondary">claude</span>{" "}
                 <span className="text-brand-text-muted">(2)</span>,{" "}
                 <span className="text-brand-accent-secondary">codex</span>{" "}
+                <span className="text-brand-text-muted">(1)</span>,{" "}
+                <span className="text-brand-accent-secondary">cursor</span>{" "}
                 <span className="text-brand-text-muted">(1)</span>
               </div>
 

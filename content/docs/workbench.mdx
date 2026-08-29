@@ -4,7 +4,7 @@ description: Group workbench agent traces by plan, wave, task, role, and pipelin
 order: 9
 ---
 
-[workbench](https://wbcli.com) dispatches coding agents through implementation, testing, review, fix, and wrap-up stages. Each invocation becomes a separate Claude Code or Codex session. thirdeye can tag those sessions automatically so the complete run remains easy to query as one plan.
+[workbench](https://wbcli.com) dispatches coding agents through implementation, testing, review, fix, and wrap-up stages. Each invocation becomes a separate Claude Code, Codex, or Cursor session. thirdeye can tag those sessions automatically so the complete run remains easy to query as one plan.
 
 ## Set up the integration
 
@@ -20,6 +20,7 @@ Register thirdeye hooks for every supported harness your workbench profile uses:
 ```bash
 thirdeye add --claude
 thirdeye add --codex
+thirdeye add --cursor
 ```
 
 Then allow thirdeye to capture workbench's metadata variables and start workbench from the same shell:
@@ -33,7 +34,7 @@ Add the export to your shell profile to enable it permanently. The pattern captu
 
 Workbench enables `--trace` and `--trace-env` by default, so no workbench flag is required. Its `--trace-prompt` option is separate from automatic tagging and can remain off.
 
-thirdeye currently captures workbench roles assigned to Claude Code or Codex. Roles assigned to another harness will continue to run, but their sessions will not appear in thirdeye.
+thirdeye currently captures workbench roles assigned to Claude Code, Codex, or Cursor. Roles assigned to another harness will continue to run, but their sessions will not appear in thirdeye.
 
 ## Workbench metadata tags
 
@@ -137,8 +138,8 @@ Built-in workbench adapters inject metadata by default. For a custom adapter in 
 ## Troubleshooting
 
 - **Sessions appear without workbench tags.** Verify that `THIRDEYE_CAPTURE_ENV='WB_*'` is exported in the shell that starts `wb`, and that the run does not use `--no-trace` or `--no-trace-env`.
-- **No sessions appear.** Register the harness with `thirdeye add --claude` or `thirdeye add --codex`, then start a new workbench run.
-- **Only some roles appear.** Inspect the effective workbench profile. thirdeye captures Claude Code and Codex, so roles assigned to other harnesses are not recorded.
+- **No sessions appear.** Register the harness with `thirdeye add --claude`, `thirdeye add --codex`, or `thirdeye add --cursor`, then start a new workbench run.
+- **Only some roles appear.** Inspect the effective workbench profile. thirdeye captures Claude Code, Codex, and Cursor, so roles assigned to other harnesses are not recorded.
 - **A custom adapter has no tags.** Set `inject_env: true` in its workbench adapter configuration.
 - **A review query mixes task and final review.** Add `agent-reviewer` for task review or `agent-branch_reviewer` for final review.
 
