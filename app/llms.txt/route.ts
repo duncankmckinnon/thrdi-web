@@ -11,9 +11,9 @@ export function GET() {
 
   const content = `# thirdeye
 
-> Local-first observability CLI for Claude Code and Codex, with optional live export to Pydantic Logfire.
+> Local-first observability CLI for Claude Code, Codex, and Cursor, with optional live export to Pydantic Logfire.
 
-thirdeye (\`thrdi\` on PyPI, \`thirdeye\` on Homebrew) captures Claude Code and Codex sessions into a unified, searchable history stored at \`~/.thirdeye/\`. Local storage is the default. The optional Python \`ui\` and \`logfire\` extras are both included in the Homebrew package. Logfire export mirrors completed turns as OpenTelemetry traces with agent-turn, model-call, tool-call, permission-request, and nested-subagent spans. Per-turn token usage is captured to JSONL plus a SQLite index, and evals can be dispatched as LLM-as-judge rubrics against recorded sessions.
+thirdeye (\`thrdi\` on PyPI, \`thirdeye\` on Homebrew) captures Claude Code, Codex, and Cursor sessions into a unified, searchable history stored at \`~/.thirdeye/\`. Local storage is the default. The optional Python \`ui\` and \`logfire\` extras are both included in the Homebrew package. Logfire export mirrors completed turns as OpenTelemetry traces with agent-turn, model-call, tool-call, permission-request, and nested-subagent spans. Per-turn token usage is captured to JSONL plus a SQLite index, and evals can be dispatched as LLM-as-judge rubrics against recorded sessions.
 
 ## Documentation
 

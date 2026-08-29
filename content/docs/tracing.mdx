@@ -1,6 +1,6 @@
 ---
 title: Tracing agents
-description: Attach thirdeye to Claude Code or Codex and capture structured turns.
+description: Attach thirdeye to Claude Code, Codex, or Cursor and capture structured turns.
 order: 2
 ---
 
@@ -16,6 +16,7 @@ Enable any of these with `thirdeye add --<platform>`. Each one is idempotent and
 |-----------------|--------------------------|-------------------------------------------------------------------------------------------------------------------------------|
 | **Claude Code** | `thirdeye add --claude`  | Captures the full session lifecycle and reconstructs every completed or interrupted turn, including nested subagents. Pairs with the bundled [agent skills](/docs/skills). |
 | **Codex**       | `thirdeye add --codex`   | Combines Codex notify and JSON hook events with rollout data to reconstruct turns, model calls, tool calls, permissions, token usage, and subagents. Use `--force` only to replace an existing notify program. |
+| **Cursor**      | `thirdeye add --cursor`  | Registers hooks in `~/.cursor/hooks.json` for both the IDE and `cursor-agent` CLI. Reconstructs generations, model usage, shell and MCP calls, file edits and reads, generic tool events, and completed subagents. |
 
 Once captured, every platform shares the same query surface: `thirdeye list / events / search / usage / tag / eval` all work identically across them.
 
@@ -42,5 +43,5 @@ For a deeper look, [agent skills](/docs/skills) walk an agent through inspecting
 
 - **No sessions appear after `add`.** `add` takes effect on the *next* agent run. Start a new session and check `thirdeye list` again.
 - **Duplicate hook entries.** Shouldn't happen — `add` is idempotent. If it does, run `thirdeye remove --<platform>` then `thirdeye add --<platform>` to reset.
-- **A removed Cursor or Gemini hook still runs.** Run `thirdeye add --list`; it reports stale hook commands that should be removed from those tools' config files.
+- **A removed Gemini hook still runs.** Run `thirdeye add --list`; it reports stale hook commands that should be removed from Gemini's config file.
 - **Usage rows missing.** See [Token usage](/docs/usage-tokens#troubleshooting); the usage sidecar is written by a separate path that may need `thirdeye usage reindex`.
