@@ -10,4 +10,12 @@ describe("HowItWorks", () => {
     expect(screen.getByRole("heading", { name: "Wire it up" })).toBeInTheDocument();
     expect(screen.getByText("thirdeye setup")).toBeInTheDocument();
   });
+
+  it("frames session history as a way to improve the workflow", () => {
+    render(<HowItWorks />);
+
+    expect(
+      screen.getByRole("heading", { name: "Understand & improve your workflow" })
+    ).toBeInTheDocument();
+  });
 });

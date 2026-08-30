@@ -29,7 +29,7 @@ const steps: { number: string; title: string; description: ReactNode; code: stri
   },
   {
     number: "3",
-    title: "Read your history",
+    title: "Understand & improve your workflow",
     description:
       "List, tail, search, tag, and evaluate every session that ever ran on this machine.",
     code: 'thirdeye list && thirdeye search "auth refactor" --tag review',
