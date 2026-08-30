@@ -33,6 +33,15 @@ To stop exporting while keeping the saved key:
 thirdeye logfire disable
 ```
 
+## Query and visualize your traces
+
+Logfire export is only the first half of the workflow. Connect your coding agent to Logfire's hosted MCP server to ask questions about captured sessions or maintain dashboards without copying telemetry into the prompt by hand:
+
+- **[Query Logfire with MCP](/docs/logfire-mcp)** — connect Claude Code, Codex, or Cursor and investigate sessions with natural-language questions backed by SQL.
+- **[Build coding-agent dashboards](/docs/logfire-dashboards)** — turn validated MCP queries into reusable Logfire dashboards for cost, throughput, outcomes, and tool behavior.
+
+The Logfire write token saved by thirdeye and the MCP connection are separate credentials. MCP normally uses browser OAuth; never reuse the saved write token as an MCP credential.
+
 ## Trace shape
 
 Each thirdeye session becomes one Logfire trace, searchable by `gen_ai.conversation.id` and separated by `claude`, `codex`, or `cursor` service name.

@@ -1,0 +1,150 @@
+---
+title: Build coding-agent dashboards
+description: Use Logfire MCP to create dashboards for agent cost, throughput, outcomes, and tool behavior.
+order: 2
+parent: logfire
+---
+
+The Logfire MCP server can turn the questions you ask during an investigation into a persistent custom dashboard. A coding agent can inspect existing dashboards, validate SQL against live thirdeye traces, and create or update panels without manually copying queries through the Logfire UI.
+
+This guide is based on the **Coding Agents** dashboard in the `agent-tracing` project. That dashboard compares Claude Code and Codex across five groups:
+
+1. Headline metrics — cost, turns, sessions, and commits.
+2. Cost & tokens — cost over time, cache hit ratio, token mix, cost per turn, and model mix.
+3. Shipped work — commits, cost per commit, PR activity, and Git operations.
+4. Turn quality — outcomes, p50/p95 duration, and interruption rate.
+5. Tool behavior — tool mix, failure rate, calls per turn, and permission friction.
+
+The same structure works for Cursor by including `cursor` in each platform filter.
+
+## Inspect before changing
+
+Dashboard MCP tools can mutate shared project resources, so start with a read-only inventory:
+
+```text
+In the agent-tracing Logfire project, list the dashboards and fetch the Coding
+Agents dashboard. Summarize its variables, panel groups, visualizations, and
+SQL queries. Run the panel queries over a recent bounded time range and report
+any empty or failing panels. Do not modify anything.
+```
+
+This gives the agent the current dashboard version and prevents it from rebuilding something that already exists. Viewing dashboards requires `project:read` and `project:read_dashboard`.
+
+## Build from validated queries
+
+Use a deliberate sequence:
+
+1. Ask the agent to inspect the Logfire schema and sample the attributes emitted by current thirdeye traces.
+2. Define the decisions the dashboard should support—not just the data available.
+3. Run each proposed SQL query through the MCP query tool with a narrow time range.
+4. Review panel names, chart types, units, group layout, and any assumptions about token accounting.
+5. Only then authorize the agent to create a new dashboard or update a named existing dashboard.
+
+Creating or editing dashboards requires `project:write_dashboard` in addition to the read scopes.
+
+Here is a reusable creation prompt:
+
+```text
+Build a custom Logfire dashboard named Coding Agent Workflow in the
+agent-tracing project. First inspect the schema and validate every query over
+the last seven days. Include Claude Code, Codex, and Cursor. Organize panels
+into Headline, Cost & tokens, Shipped work, Turn quality, and Tool behavior.
+Use time-series charts for trends, value or bar charts for comparisons, and a
+table for failure details. Show me the proposed queries and layout before you
+create or modify any dashboard.
+```
+
+## Recommended panels
+
+| Panel | Why it matters | Suggested visualization |
+|---|---|---|
+| Total cost, turns, sessions | Establishes scale before comparing rates | Values or paired bars |
+| Cost and cache ratio over time | Finds expensive periods and poor cache reuse | Time series |
+| Token mix by platform | Separates fresh input, cache read/write, visible output, and reasoning | Pie or stacked bar |
+| Cost per turn and cost per commit | Relates spend to useful work | Bar chart |
+| Turn outcomes and duration | Surfaces interruptions and slow workflows | Stacked bars plus p50/p95 lines |
+| Tool mix and calls per turn | Shows how platforms approach the same work | Pie and bar charts |
+| Tool failure rate | Identifies unreliable tools worth fixing or replacing | Table |
+| Permission requests per turn | Quantifies approval friction | Bar chart |
+| Git and PR activity | Connects agent behavior to shipped changes | Time series and bars |
+
+## Dashboard query patterns
+
+Dashboard time-series queries need an `x` timestamp. Use `$resolution` so Logfire selects a suitable bucket for the visible time range.
+
+### Turn outcomes over time
+
+```sql
+SELECT
+  time_bucket($resolution, start_timestamp) AS x,
+  service_name || ' · ' ||
+    COALESCE(attributes->>'thirdeye.turn.status', 'unknown') AS series,
+  count(*) AS turns
+FROM records
+WHERE span_name IN ('agent-turn', 'agent_turn')
+  AND service_name IN ('claude', 'codex', 'cursor')
+GROUP BY x, series
+ORDER BY x
+LIMIT 500
+```
+
+### Turn duration p50 and p95
+
+```sql
+SELECT
+  time_bucket($resolution, start_timestamp) AS x,
+  service_name,
+  approx_percentile_cont(duration, 0.5) AS p50,
+  approx_percentile_cont(duration, 0.95) AS p95
+FROM records
+WHERE span_name IN ('agent-turn', 'agent_turn')
+  AND service_name IN ('claude', 'codex', 'cursor')
+  AND duration IS NOT NULL
+GROUP BY x, service_name
+ORDER BY x
+LIMIT 500
+```
+
+### Cost per turn
+
+```sql
+SELECT
+  service_name,
+  sum((attributes->>'operation.cost')::float)
+    FILTER (WHERE span_name LIKE 'chat %')
+    / NULLIF(
+        count(*) FILTER (
+          WHERE span_name IN ('agent-turn', 'agent_turn')
+        ),
+        0
+      ) AS cost_per_turn
+FROM records
+WHERE service_name IN ('claude', 'codex', 'cursor')
+GROUP BY service_name
+LIMIT 20
+```
+
+## Account for coding-agent semantics
+
+Agent telemetry has a few traps that generic application dashboards miss:
+
+- **Do not sum cache-read input blindly.** A model can report the same growing context prefix on every call. The existing Coding Agents dashboard uses the per-session peak for cache-read tokens, then sums cache creation, fresh input, output, and reasoning as disjoint buckets.
+- **Separate rates from totals.** Tool calls and permission requests become more comparable when divided by turns; total counts mostly reflect how much each platform was used.
+- **Use `operation.cost` only where present.** Older spans and some providers may not have client-side pricing, so describe missing cost instead of treating it as zero.
+- **Normalize tool names carefully.** Prefer `gen_ai.tool.name`, with the span name as a fallback. Code-mode wrappers may require additional parsing and can undercount scripts that invoke several tools.
+- **Tie output to shipped work.** Commits and PRs are imperfect but useful alongside cost and turn metrics. Avoid presenting them as a standalone quality score.
+
+## Evolve an existing dashboard safely
+
+When improving a shared dashboard, name it and ask the agent to fetch its current version before proposing changes:
+
+```text
+Inspect the current Coding Agents dashboard in agent-tracing. Propose a Cursor
+comparison for every panel that currently filters to Claude and Codex. Validate
+the revised SQL first and preserve all existing groups, descriptions, units,
+and layout. Show me the diff and wait for approval before updating it.
+```
+
+Prefer adding or updating individual panels over replacing the whole dashboard. For larger changes, fetch the full Perses-compatible dashboard definition and keep it in version control before applying an update.
+
+See Logfire's official guides for [custom dashboards](https://logfire.pydantic.dev/docs/guides/web-ui/dashboards/) and [dashboard SQL queries](https://logfire.pydantic.dev/docs/how-to-guides/write-dashboard-queries/).
