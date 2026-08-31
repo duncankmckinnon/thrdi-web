@@ -31,7 +31,7 @@ const steps: { number: string; title: string; description: ReactNode; code: stri
     number: "3",
     title: "Understand & improve your workflow",
     description:
-      "List, tail, search, tag, and evaluate every session that ever ran on this machine.",
+      "List, tail, search, tag, and evaluate every session",
     code: 'thirdeye list && thirdeye search "auth refactor" --tag review',
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
