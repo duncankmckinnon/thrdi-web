@@ -44,7 +44,7 @@ const steps: { number: string; title: string; description: ReactNode; code: stri
 
 export function HowItWorks() {
   return (
-    <section className="px-6 py-24 lg:px-8">
+    <section className="px-6 pb-24 pt-16 lg:px-8">
       <div className="mx-auto max-w-5xl lg:max-w-6xl xl:max-w-7xl 2xl:max-w-[96rem]">
         <div className="text-center">
           <h2 className="text-3xl font-bold sm:text-4xl">How it works</h2>
