@@ -4,7 +4,7 @@ const steps: { number: string; title: string; description: ReactNode; code: stri
   {
     number: "1",
     title: "Install",
-    description: "One command, including the browser UI and Logfire support. No background daemon.",
+    description: "One command, including the browser UI and Logfire support.",
     code: "brew install duncankmckinnon/tap/thirdeye",
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -18,7 +18,7 @@ const steps: { number: string; title: string; description: ReactNode; code: stri
     number: "2",
     title: "Wire it up",
     description:
-      "Set up tracing, agent skills, and optional Logfire sync in one guided flow. No code changes.",
+      "Set up tracing, agent skills, and optional Logfire sync in one guided flow.",
     code: "thirdeye setup",
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
