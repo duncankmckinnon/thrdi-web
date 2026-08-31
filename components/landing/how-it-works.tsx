@@ -4,7 +4,7 @@ const steps: { number: string; title: string; description: ReactNode; code: stri
   {
     number: "1",
     title: "Install",
-    description: "One command, including the browser UI and Logfire support. No background daemon.",
+    description: "One command, including the browser UI and Logfire support.",
     code: "brew install duncankmckinnon/tap/thirdeye",
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -18,8 +18,8 @@ const steps: { number: string; title: string; description: ReactNode; code: stri
     number: "2",
     title: "Wire it up",
     description:
-      "Attach to Claude Code, Codex, or Cursor. Tracing starts on the next session — no code changes.",
-    code: "thirdeye add --claude  # or: --codex, --cursor",
+      "Set up tracing, agent skills, and optional Logfire sync in one guided flow.",
+    code: "thirdeye setup",
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
@@ -29,9 +29,9 @@ const steps: { number: string; title: string; description: ReactNode; code: stri
   },
   {
     number: "3",
-    title: "Read your history",
+    title: "Understand & improve your workflow",
     description:
-      "List, tail, search, tag, and evaluate every session that ever ran on this machine.",
+      "List, tail, search, tag, and evaluate every session",
     code: 'thirdeye list && thirdeye search "auth refactor" --tag review',
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

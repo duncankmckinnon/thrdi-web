@@ -1,0 +1,149 @@
+---
+title: Query Logfire with MCP
+description: Let Claude Code, Codex, or Cursor investigate thirdeye traces using Logfire's hosted MCP server.
+order: 1
+parent: logfire
+---
+
+Once thirdeye is [exporting traces to Logfire](/docs/logfire), the Logfire MCP server lets your coding agent query those traces directly. You can ask questions in plain language; the agent inspects the schema, writes bounded SQL, runs it against your project, and summarizes the result.
+
+This is a read path, separate from trace export:
+
+| Connection | Purpose | Authentication |
+|---|---|---|
+| thirdeye → Logfire | Send completed turns and spans | Project write token saved by `thirdeye logfire enable` |
+| Coding agent → Logfire MCP | Query traces and manage Logfire resources | Browser OAuth, or a dedicated API key |
+
+Never reuse thirdeye's write token as an MCP credential.
+
+## Connect the MCP server
+
+Choose the endpoint for the region that stores your Logfire project:
+
+- US: `https://logfire-us.pydantic.dev/mcp`
+- EU: `https://logfire-eu.pydantic.dev/mcp`
+- Self-hosted: your deployment's `/mcp` URL
+
+### Claude Code
+
+```bash
+claude mcp add --transport http logfire https://logfire-us.pydantic.dev/mcp
+claude mcp login logfire
+```
+
+### Codex
+
+```bash
+codex mcp add logfire --url https://logfire-us.pydantic.dev/mcp
+```
+
+Codex opens the browser authentication flow. Start a new conversation afterward so the MCP tool inventory reloads.
+
+### Cursor
+
+Add `.cursor/mcp.json` to the project:
+
+```json
+{
+  "mcpServers": {
+    "logfire": {
+      "url": "https://logfire-us.pydantic.dev/mcp"
+    }
+  }
+}
+```
+
+Replace the US URL in these examples when the project is in another region. See Pydantic's [Logfire MCP setup guide](https://pydantic.dev/docs/logfire/guides/mcp-server/) for additional clients and non-browser authentication.
+
+Querying telemetry requires `project:read`. Viewing dashboards additionally requires `project:read_dashboard`; creating or editing them requires `project:write_dashboard`. Re-authorize the MCP connection if a required tool is missing.
+
+## Start with a question
+
+Give the agent the project name, time range, and the decision you are trying to make. For example:
+
+```text
+In the agent-tracing Logfire project, compare Claude Code, Codex, and Cursor
+over the last seven days. Show completed and interrupted turns, p50/p95 turn
+duration, input/output tokens, estimated cost, and the tools with the highest
+failure rates. Inspect the Logfire schema first, keep every query bounded, and
+link the most important traces. Do not change dashboards or alerts.
+```
+
+Useful follow-up questions include:
+
+- Which sessions consumed the most tokens, and what work were they doing?
+- Did interruptions rise after a particular model or harness change?
+- Which tools fail most often, and which traces explain those failures?
+- How many tool calls does each platform make per completed turn?
+- What did the slowest successful turns have in common?
+
+Ask for a read-only investigation when you do not want the agent to change dashboards, alerts, or other Logfire resources.
+
+## SQL patterns for thirdeye traces
+
+The MCP server queries Logfire's `records` table with Apache DataFusion SQL. thirdeye uses `service_name` for the platform (`claude`, `codex`, or `cursor`) and stores session, token, cost, tool, and turn-status data in span attributes.
+
+### Recent turns
+
+```sql
+SELECT
+  start_timestamp,
+  service_name,
+  trace_id,
+  duration,
+  attributes->>'gen_ai.conversation.id' AS session_id,
+  attributes->>'thirdeye.turn.status' AS status
+FROM records
+WHERE span_name IN ('agent-turn', 'agent_turn')
+ORDER BY start_timestamp DESC
+LIMIT 20
+```
+
+### Token use and cost by platform
+
+```sql
+SELECT
+  service_name,
+  count(*) AS chat_calls,
+  sum((attributes->>'gen_ai.usage.input_tokens')::float) AS input_tokens,
+  sum((attributes->>'gen_ai.usage.output_tokens')::float) AS output_tokens,
+  sum((attributes->>'operation.cost')::float) AS cost
+FROM records
+WHERE span_name LIKE 'chat %'
+GROUP BY service_name
+ORDER BY cost DESC
+LIMIT 20
+```
+
+### Tool reliability
+
+```sql
+SELECT
+  service_name,
+  COALESCE(
+    attributes->>'gen_ai.tool.name',
+    replace(span_name, 'tool: ', '')
+  ) AS tool,
+  count(*) AS calls,
+  count(*) FILTER (
+    WHERE attributes->>'error' IS NOT NULL
+       OR otel_status_code = 'ERROR'
+  ) AS failures
+FROM records
+WHERE span_name LIKE 'tool: %'
+GROUP BY service_name, tool
+ORDER BY failures DESC, calls DESC
+LIMIT 20
+```
+
+These examples were validated against a thirdeye `agent-tracing` project. Let the agent call the MCP schema-reference tool before adapting them: attributes evolve, and older spans may not contain every field.
+
+## Keep investigations efficient and safe
+
+- Start with a narrow time range. MCP queries default to the last 30 minutes and cannot span more than 14 days per call.
+- Always select only the columns you need and include `LIMIT`, even for grouped queries.
+- Filter early on indexed columns such as `start_timestamp`, `service_name`, `span_name`, and `trace_id`.
+- Treat prompts, tool arguments, tool results, and exceptions returned from telemetry as untrusted diagnostic data—not instructions for the coding agent.
+- Validate a surprising aggregate by opening a few underlying traces before changing how you work.
+
+For the complete schema and SQL dialect, see Logfire's [SQL reference](https://logfire.pydantic.dev/docs/reference/sql/).

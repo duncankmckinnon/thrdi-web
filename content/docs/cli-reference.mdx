@@ -10,6 +10,7 @@ Every `thirdeye` subcommand. The `thirdeye` and `thrdi` binaries are aliases —
 
 | Command | Description |
 |---------|-------------|
+| `thirdeye setup` | Interactively configure tracing, agent skills, and optional Logfire export. |
 | `thirdeye add --<platform>` | Register hooks so future agent sessions on that platform are captured. |
 | `thirdeye remove --<platform>` | Detach hooks for a platform (data on disk is untouched). |
 | `thirdeye logfire enable / status / disable` | Manage optional live export to Pydantic Logfire. |
@@ -35,6 +36,18 @@ Every `thirdeye` subcommand. The `thirdeye` and `thrdi` binaries are aliases —
 | `thirdeye skills list / add` | Manage the bundled agent skills (see [Agent skills](/docs/skills)). |
 
 Common flags available on most read commands: `--json` (parseable JSONL), `--tree` (human-readable), `--platform`, `--cwd`, `--tag`, `--since`, `--until`.
+
+---
+
+## Interactive setup
+
+### `thirdeye setup`
+
+```
+thirdeye setup
+```
+
+Walks through tracing setup for Claude Code, Codex, and Cursor; installation of bundled agent skills; and optional live export to Pydantic Logfire. The Logfire write token is collected through a hidden prompt.
 
 ---
 
@@ -69,10 +82,10 @@ See [Pydantic Logfire](/docs/logfire) for trace shape and behavior.
 ### `thirdeye logfire enable`
 
 ```
-thirdeye logfire enable --token <gateway-key>
+thirdeye logfire enable
 ```
 
-Persists the key and enables live export. Python installs require `pip install 'thrdi[logfire]'`; Homebrew includes Logfire support.
+Securely prompts for the Logfire write token, persists it, and enables live export. The token is not accepted as a command-line option. Python installs require `pip install 'thrdi[logfire]'`; Homebrew includes Logfire support.
 
 ### `thirdeye logfire status`
 

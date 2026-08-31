@@ -32,9 +32,21 @@ Verify the install:
 thirdeye --help
 ```
 
+## Interactive setup
+
+Run the setup wizard to configure tracing, install the bundled agent skills, and optionally enable live Pydantic Logfire export in one flow:
+
+```bash
+thirdeye setup
+```
+
+The wizard asks which agent platforms to trace, whether to install skills, and whether to enable Logfire. Logfire remains opt-in and, when selected, the wizard requests the write token using a hidden prompt.
+
+Skills are installed for the selected agents: `.claude/skills/` for Claude Code, `.codex/skills/` for Codex, and the shared `.agents/skills/` directory for Cursor. If you skip every tracing platform but choose skills, the shared directory is used.
+
 ## Enable tracing
 
-Attach thirdeye to whichever agent CLIs you use. Each `add` is idempotent — running it twice leaves a single hook entry in place.
+If you prefer to configure each piece separately, attach thirdeye to whichever agent CLIs you use. Each `add` is idempotent — running it twice leaves a single hook entry in place.
 
 ```bash
 thirdeye add --claude        # Claude Code
