@@ -1,6 +1,6 @@
 export function CodeExample() {
   return (
-    <section className="px-6 py-24 lg:px-8">
+    <section className="px-6 lg:px-8">
       <div className="mx-auto max-w-6xl xl:max-w-7xl">
         <div className="text-center">
           <h2 className="text-3xl font-bold sm:text-4xl">
@@ -8,7 +8,7 @@ export function CodeExample() {
           </h2>
         </div>
 
-        <div className="mt-16 grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="mt-12 grid grid-cols-1 gap-6 lg:grid-cols-2">
           {/* Left panel — Search and inspect */}
           <div className="overflow-hidden rounded-xl border border-brand-bg-tertiary bg-brand-bg-secondary">
             <div className="flex items-center border-b border-brand-bg-tertiary px-4 py-3">

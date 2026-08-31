@@ -14,13 +14,11 @@ export const metadata: Metadata = {
 export default function LandingPage() {
   return (
     <>
-      <section className="py-24">
-        <Hero />
-      </section>
-      <section className="py-20 bg-brand-bg-secondary/50">
+      <Hero />
+      <section className="bg-brand-bg-secondary/50">
         <HowItWorks />
       </section>
-      <section className="py-20">
+      <section className="py-16">
         <CodeExample />
       </section>
       <section className="py-24 bg-brand-bg-secondary/50">
