@@ -178,6 +178,8 @@ Skills install as **symlinks** pointing at the bundled skill content inside the 
 
 If you want a frozen copy that won't move with thirdeye upgrades, install once and then replace the symlink with `cp -RL`.
 
+**On Windows**, creating a symlink requires Developer Mode or administrator rights. Without either, `thirdeye skills add` falls back to copying the skill directory instead. A copied skill doesn't track an upgrade the way a symlink does — after `pipx upgrade thrdi` (or `uv tool upgrade thrdi`), rerun `thirdeye skills add --force` to refresh the copies.
+
 ## Using a skill
 
 ### Claude Code

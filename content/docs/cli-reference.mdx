@@ -63,7 +63,7 @@ thirdeye add --list
 ```
 
 Registers a hook so the next session on that platform is captured. Idempotent.
-`--list` prints the currently supported platforms and warns about stale hooks from removed platforms. Cursor installs hooks for both its IDE and CLI in `~/.cursor/hooks.json`. For Codex, `--force` replaces an existing `notify` program.
+`--list` prints the currently supported platforms and warns about stale hooks from removed platforms. Cursor installs hooks for both its IDE and CLI in `~/.cursor/hooks.json`. For Codex, `--force` replaces an existing `notify` program. On Windows, if the resolved binary path contains a space, the bare binary name is written into the hook config instead of the absolute path, relying on `PATH` resolution.
 
 ### `thirdeye remove`
 
@@ -345,7 +345,7 @@ thirdeye skills add [-p PATH | --claude | --codex]
                     [--only NAME] [--force]
 ```
 
-Install bundled skills as symlinks, one directory per skill. With no target flag the destination is `.agents/skills/`.
+Install bundled skills as symlinks, one directory per skill. With no target flag the destination is `.agents/skills/`. On Windows without Developer Mode or admin rights, where a symlink can't be created, thirdeye copies the directory instead — rerun with `--force` after upgrading thirdeye to refresh copied skills.
 
 | Flag | Effect |
 |---|---|
@@ -365,5 +365,5 @@ Install bundled skills as symlinks, one directory per skill. With no target flag
 |----------------|--------|
 | `--json` | Emit JSONL on commands that support it. |
 | `--tree` | Human-readable layout where supported. |
-| `THIRDEYE_HOME` | Override the data directory (default: `~/.thirdeye`). |
+| `THIRDEYE_HOME` | Override the data directory (default: `~/.thirdeye`, i.e. `C:\Users\<name>\.thirdeye` on Windows). |
 | `thirdeye --help` | Full inline reference; works on every subcommand. |

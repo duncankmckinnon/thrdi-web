@@ -95,7 +95,7 @@ const jsonLd = {
   name: "thirdeye",
   alternateName: "thrdi",
   applicationCategory: "DeveloperApplication",
-  operatingSystem: "macOS, Linux",
+  operatingSystem: "macOS, Linux, Windows",
   description: siteDescription,
   url: "https://thrdi.com",
   downloadUrl: "https://pypi.org/project/thrdi/",

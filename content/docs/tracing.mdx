@@ -20,6 +20,13 @@ Enable any of these with `thirdeye add --<platform>`. Each one is idempotent and
 
 Once captured, every platform shares the same query surface: `thirdeye list / events / search / usage / tag / eval` all work identically across them.
 
+## Platform differences
+
+Capture format and storage layout are identical everywhere. A couple of setup details differ on Windows:
+
+- **Hook paths.** Hooks normally record the resolved absolute path to the `thirdeye`/`thrdi` binary. On Windows, if that path contains a space (common under `C:\Users\First Last\...`), thirdeye writes the bare binary name into the tool's config instead and lets `PATH` resolve it — this sidesteps shell-quoting differences between `cmd.exe`, PowerShell, and direct process creation.
+- **Concurrent reads.** POSIX locks let multiple readers share a lock; Windows locks are exclusive-only, so concurrent reads serialize instead of running in parallel. This only affects throughput under heavy contention — reads and writes are equally correct on both platforms.
+
 ## Structured turn traces
 
 The tracing adapters assemble a whole turn before export: one user prompt through its final response, interruption, or error. Each turn includes its model calls, the tool calls requested by each model call, permission prompts, usage, and recursively nested subagent turns. This preserves parent-child relationships and real start/end timestamps instead of flattening hook events into an unordered timeline.
