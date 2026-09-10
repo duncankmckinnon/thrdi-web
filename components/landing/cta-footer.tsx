@@ -23,7 +23,8 @@ export function CtaFooter() {
             Sync to Logfire
           </h3>
           <p className="mt-2 text-sm leading-relaxed text-brand-text-secondary">
-            Mirror completed agent turns to Pydantic Logfire as structured traces.
+            Sign in from the browser and mirror completed agent turns to
+            Pydantic Logfire as structured traces. No key to paste.
           </p>
           <Command>thirdeye logfire enable</Command>
           <Link

@@ -31,7 +31,7 @@ Every `thirdeye` subcommand. The `thirdeye` and `thrdi` binaries are aliases —
 | `thirdeye eval show <id>` | Print the latest eval result for a session. |
 | `thirdeye eval list` | History of eval runs across sessions. |
 | `thirdeye eval status` | Show background eval jobs. |
-| `thirdeye ui` | Launch the local browser UI (see [Browser UI](/docs/ui)). |
+| `thirdeye ui` / `thirdeye serve` | Launch the local browser UI (see [Browser UI](/docs/ui)). |
 | `thirdeye views list / save / delete` | Manage saved filter views used by the UI sidebar. |
 | `thirdeye skills list / add` | Manage the bundled agent skills (see [Agent skills](/docs/skills)). |
 
@@ -47,7 +47,7 @@ Common flags available on most read commands: `--json` (parseable JSONL), `--tre
 thirdeye setup
 ```
 
-Walks through tracing setup for Claude Code, Codex, and Cursor; installation of bundled agent skills; and optional live export to Pydantic Logfire. The Logfire write token is collected through a hidden prompt.
+Walks through tracing setup for Claude Code, Codex, and Cursor; installation of bundled agent skills; and optional live export to Pydantic Logfire. Choosing Logfire signs you in through the browser and mints the write token for you — there is no key to paste.
 
 ---
 
@@ -83,9 +83,10 @@ See [Pydantic Logfire](/docs/logfire) for trace shape and behavior.
 
 ```
 thirdeye logfire enable
+thirdeye logfire enable --auth
 ```
 
-Securely prompts for the Logfire write token, persists it, and enables live export. The token is not accepted as a command-line option. Python installs require `pip install 'thrdi[logfire]'`; Homebrew includes Logfire support.
+Signs in to Logfire in the browser, mints a project write token, persists it, and enables live export. When a token is already saved, the command offers to reuse it instead of signing in again. When the account has more than one writable project you pick which to use; when it lists none, the command offers to create or attach one. `--auth` logs out first, so a different account or an expired login can re-authenticate. The token is not accepted as a command-line option. Python installs require `pip install 'thrdi[logfire]'`; Homebrew includes Logfire support.
 
 ### `thirdeye logfire status`
 
@@ -308,9 +309,10 @@ See [Browser UI](/docs/ui) for the full reference.
 
 ```
 thirdeye ui [--port N] [--host ADDR] [--no-browser]
+thirdeye serve [--port N] [--host ADDR] [--no-browser]
 ```
 
-Launch the local browser UI. Defaults to `http://127.0.0.1:8765` and auto-opens your default browser. Python installs require the `ui` extra (`pip install 'thrdi[ui]'`); Homebrew includes it.
+Launch the local browser UI. Defaults to `http://127.0.0.1:8765` and auto-opens your default browser. `thirdeye serve` is a full alias of `thirdeye ui` — same host, port, and browser flags. Python installs require the `ui` extra (`pip install 'thrdi[ui]'`); Homebrew includes it.
 
 ### `thirdeye views`
 

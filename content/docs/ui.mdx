@@ -37,9 +37,10 @@ thirdeye ui                        # http://127.0.0.1:8765 by default
 thirdeye ui --port 9000            # pick a port
 thirdeye ui --host 127.0.0.1       # interface to bind (loopback only)
 thirdeye ui --no-browser           # don't auto-open the browser
+thirdeye serve                     # full alias of `thirdeye ui`, same flags
 ```
 
-The CLI opens your default browser unless `--no-browser` is passed. `Ctrl-C` stops the server.
+The CLI opens your default browser unless `--no-browser` is passed. `Ctrl-C` stops the server. `thirdeye serve` launches the same server with the same host, port, and browser flags — use whichever name you prefer.
 
 If the extra isn't installed, `thirdeye ui` prints a hint and exits with status `1`:
 
