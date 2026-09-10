@@ -38,7 +38,7 @@ thirdeye currently captures workbench roles assigned to Claude Code, Codex, or C
 
 ## Workbench metadata tags
 
-Workbench supplies five environment variables to task-pipeline agents. thirdeye lowercases their values, removes the leading `WB_` from the field name, and writes the resulting tags on the session-start event:
+Workbench supplies five environment variables to task-pipeline agents. thirdeye lowercases their values, removes the leading `WB_` from the field name, and writes the resulting tags on the session-start event. When [Logfire export](/docs/logfire) is enabled, thirdeye also carries these variables into the exported trace — see [In Logfire](#in-logfire) below.
 
 | Workbench variable | Example value | thirdeye tag | Meaning |
 |---|---|---|---|
@@ -51,6 +51,17 @@ Workbench supplies five environment variables to task-pipeline agents. thirdeye 
 Most task sessions receive all five. Standalone stages such as planning, final review, and PR writing have no wave or task, so only the applicable metadata becomes tags.
 
 Spaces and unsupported punctuation in values become dashes. `_`, `.`, `-`, and `#` are preserved. A derived tag is skipped if it is invalid or longer than 64 characters.
+
+## In Logfire
+
+The tags above are local thirdeye annotations for `thirdeye list --tag` and the [browser UI](/docs/ui). When [Logfire export](/docs/logfire) is enabled, thirdeye also carries the same workbench context into the exported trace:
+
+- **Every span** — from the session root down to individual tool calls — gets a `wb.*` attribute for each variable: `WB_PLAN` becomes `wb.plan`, and likewise `wb.wave`, `wb.task`, `wb.agent`, and `wb.step`. The value is the raw environment value with its original case and characters intact — no `plan-` prefix and no dash substitution.
+- **The session span** additionally carries each non-empty value as a value-only Logfire tag (`auth-refactor`, `tester`, `test#1`), deduplicated across the trace.
+
+Filter a plan's root traces by tag, then group or break down by the `wb.*` attributes at any depth — in Logfire queries, the [Logfire MCP](/docs/logfire-mcp), and [dashboards](/docs/logfire-dashboards).
+
+Workbench previously supplied this context through `OTEL_RESOURCE_ATTRIBUTES`, but Claude Code replaces that variable on the spans it emits, so the `WB_*` variables are the supported path. An attribute already present on a span is left untouched; the captured `wb.*` value does not overwrite it.
 
 ## Tags for each pipeline step
 
@@ -138,6 +149,7 @@ Built-in workbench adapters inject metadata by default. For a custom adapter in 
 ## Troubleshooting
 
 - **Sessions appear without workbench tags.** Verify that `THIRDEYE_CAPTURE_ENV='WB_*'` is exported in the shell that starts `wb`, and that the run does not use `--no-trace` or `--no-trace-env`.
+- **Workbench tags appear in `thirdeye list` but not in Logfire.** Confirm Logfire export is on with `thirdeye logfire status`. The `wb.*` span attributes and the session-span tags are only written when export is enabled.
 - **No sessions appear.** Register the harness with `thirdeye add --claude`, `thirdeye add --codex`, or `thirdeye add --cursor`, then start a new workbench run.
 - **Only some roles appear.** Inspect the effective workbench profile. thirdeye captures Claude Code, Codex, and Cursor, so roles assigned to other harnesses are not recorded.
 - **A custom adapter has no tags.** Set `inject_env: true` in its workbench adapter configuration.
