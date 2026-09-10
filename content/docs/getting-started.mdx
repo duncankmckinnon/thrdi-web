@@ -8,8 +8,6 @@ order: 1
 
 ## Install
 
-> **macOS and Linux only, for now.** thirdeye is not yet supported on Windows — Windows support is planned.
-
 thirdeye ships as `thrdi` on PyPI and `thirdeye` on Homebrew. The installed commands are `thirdeye` and `thrdi` — aliases of each other.
 
 ### Homebrew (recommended)
@@ -18,14 +16,14 @@ thirdeye ships as `thrdi` on PyPI and `thirdeye` on Homebrew. The installed comm
 brew install duncankmckinnon/tap/thirdeye
 ```
 
-The Homebrew package includes the browser UI and Pydantic Logfire dependencies. You do not need to install the `ui` or `logfire` extras separately.
+The Homebrew package includes the browser UI and Pydantic Logfire dependencies. You do not need to install the `ui` or `logfire` extras separately. Homebrew is macOS/Linux only — on Windows, install with `pipx` or `uv` instead.
 
 ### pipx / uv
 
 ```bash
-pipx install thrdi
+pipx install 'thrdi[ui,logfire]'
 # or
-uv tool install thrdi
+uv tool install 'thrdi[ui,logfire]'
 ```
 
 Verify the install:
