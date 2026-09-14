@@ -1,6 +1,6 @@
 ---
 title: Query Logfire with MCP
-description: Let Claude Code, Codex, or Cursor investigate thirdeye traces using Logfire's hosted MCP server.
+description: Let Claude Code, Codex, Cursor, or Copilot investigate thirdeye traces using Logfire's hosted MCP server.
 order: 1
 parent: logfire
 ---
@@ -53,7 +53,7 @@ Add `.cursor/mcp.json` to the project:
 }
 ```
 
-Replace the US URL in these examples when the project is in another region. See Pydantic's [Logfire MCP setup guide](https://pydantic.dev/docs/logfire/guides/mcp-server/) for additional clients and non-browser authentication.
+Replace the US URL in these examples when the project is in another region. See Pydantic's [Logfire MCP setup guide](https://pydantic.dev/docs/logfire/guides/mcp-server/) for additional clients, including GitHub Copilot CLI, and non-browser authentication.
 
 Querying telemetry requires `project:read`. Viewing dashboards additionally requires `project:read_dashboard`; creating or editing them requires `project:write_dashboard`. Re-authorize the MCP connection if a required tool is missing.
 
@@ -62,8 +62,8 @@ Querying telemetry requires `project:read`. Viewing dashboards additionally requ
 Give the agent the project name, time range, and the decision you are trying to make. For example:
 
 ```text
-In the agent-tracing Logfire project, compare Claude Code, Codex, and Cursor
-over the last seven days. Show completed and interrupted turns, p50/p95 turn
+In the agent-tracing Logfire project, compare Claude Code, Codex, Cursor, and
+Copilot over the last seven days. Show completed and interrupted turns, p50/p95 turn
 duration, input/output tokens, estimated cost, and the tools with the highest
 failure rates. Inspect the Logfire schema first, keep every query bounded, and
 link the most important traces. Do not change dashboards or alerts.
@@ -81,7 +81,7 @@ Ask for a read-only investigation when you do not want the agent to change dashb
 
 ## SQL patterns for thirdeye traces
 
-The MCP server queries Logfire's `records` table with Apache DataFusion SQL. thirdeye uses `service_name` for the platform (`claude`, `codex`, or `cursor`) and stores session, token, cost, tool, and turn-status data in span attributes.
+The MCP server queries Logfire's `records` table with Apache DataFusion SQL. thirdeye uses `service_name` for the platform (`claude`, `codex`, `cursor`, or `copilot`) and stores session, token, cost, tool, and turn-status data in span attributes.
 
 ### Recent turns
 

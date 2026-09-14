@@ -1,0 +1,52 @@
+---
+title: Copilot capture
+description: How thirdeye captures GitHub Copilot CLI sessions, and how to opt retained history into export.
+order: 1
+parent: tracing
+---
+
+`thirdeye add --copilot` attaches thirdeye to the [GitHub Copilot CLI](https://github.com/features/copilot). Capture is local and archive-first: it keeps a durable, immutable V1 archive of what Copilot wrote, and derives turns, usage accounting, and an export queue (V2) from that archive on demand.
+
+```bash
+thirdeye add --copilot
+thirdeye copilot status --source-home "$COPILOT_HOME"
+thirdeye copilot sync --source-home "$COPILOT_HOME"
+thirdeye copilot reconcile
+thirdeye copilot reconcile --session-id <stored-session-id> --rebuild
+thirdeye copilot watch --source-home "$COPILOT_HOME" --interval 1
+thirdeye remove --copilot
+```
+
+## What it reads
+
+`--source-home` is optional. Resolution order is `--source-home`, then the `COPILOT_HOME` environment variable, then `~/.copilot`. Capture reads only that home's `session-state/**/events.jsonl`, `workspace.yaml`, and `session-store.db` (`sessions`, `turns`, `assistant_usage_events` tables) — never credentials, token-bearing config, or any other Copilot file.
+
+`thirdeye add --copilot` writes user-level hooks at `$COPILOT_HOME/hooks/thirdeye.json` (default `~/.copilot/hooks/thirdeye.json`), the same shared `.agents/skills/` skill directory Cursor uses. `watch` is a separate, explicit foreground poller — it is not started by `add` or `setup`, and it can import transcripts and SQLite rows even when hooks are absent.
+
+## V1 archive, V2 views
+
+V1 stores immutable source records as captured — transcript events, database rows, and hook observations — and never rewrites them. V2 is a derived projection rebuilt from that archive, so it can reconstruct a session's turns and usage even after the original Copilot files are gone. Once captured, Copilot sessions share the same query surface as every other platform: `thirdeye list / events / search / usage / tag / eval` all work identically.
+
+```bash
+# Rebuild every retained Copilot archive locally.
+thirdeye copilot reconcile
+
+# Rebuild one archive's derived indexes only — keeps the raw archive
+# and delivery ledger untouched.
+thirdeye copilot reconcile --session-id <stored-session-id> --rebuild
+```
+
+## Export eligibility
+
+Normal `sync` and `reconcile` refresh local projections only; they do not mark anything export-eligible. To opt already-completed retained history into export, activate it explicitly:
+
+```bash
+thirdeye copilot sync --export --source-home "$COPILOT_HOME"
+thirdeye copilot reconcile --export
+```
+
+`watch` and hook follow-up activate live-style export without that history opt-in — their first activation records a durable eligibility boundary even if remote export isn't configured yet. Interactions already complete at that point stay local-only; interactions still open may be queued later if they finish and [Pydantic Logfire](/docs/logfire) export is configured. Jobs are only dispatched once export is actually configured — a queued job is not a confirmed delivery.
+
+## Known limits
+
+Windows support for the Copilot installer is implemented but not live-verified against the real tool — see [Tracing agents](/docs/tracing#platform-differences). Passing unit tests is not live certification of Copilot, native VS Code, or Copilot cloud integrations.

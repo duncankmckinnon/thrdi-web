@@ -13,6 +13,7 @@ Every `thirdeye` subcommand. The `thirdeye` and `thrdi` binaries are aliases —
 | `thirdeye setup` | Interactively configure tracing, agent skills, and optional Logfire export. |
 | `thirdeye add --<platform>` | Register hooks so future agent sessions on that platform are captured. |
 | `thirdeye remove --<platform>` | Detach hooks for a platform (data on disk is untouched). |
+| `thirdeye copilot status / sync / reconcile / watch` | Inspect, import, and rebuild the local Copilot archive (see [Copilot capture](/docs/copilot-capture)). |
 | `thirdeye logfire enable / status / disable` | Manage optional live export to Pydantic Logfire. |
 | `thirdeye list` | List recent sessions across all platforms, newest first. |
 | `thirdeye events <id>` | Print all events for a session. |
@@ -47,7 +48,7 @@ Common flags available on most read commands: `--json` (parseable JSONL), `--tre
 thirdeye setup
 ```
 
-Walks through tracing setup for Claude Code, Codex, and Cursor; installation of bundled agent skills; and optional live export to Pydantic Logfire. Choosing Logfire signs you in through the browser and mints the write token for you — there is no key to paste.
+Walks through tracing setup for Claude Code, Codex, Cursor, and GitHub Copilot CLI; installation of bundled agent skills; and optional live export to Pydantic Logfire. Choosing Logfire signs you in through the browser and mints the write token for you — there is no key to paste.
 
 ---
 
@@ -59,11 +60,12 @@ Walks through tracing setup for Claude Code, Codex, and Cursor; installation of 
 thirdeye add --claude
 thirdeye add --codex
 thirdeye add --cursor
+thirdeye add --copilot
 thirdeye add --list
 ```
 
 Registers a hook so the next session on that platform is captured. Idempotent.
-`--list` prints the currently supported platforms and warns about stale hooks from removed platforms. Cursor installs hooks for both its IDE and CLI in `~/.cursor/hooks.json`. For Codex, `--force` replaces an existing `notify` program. On Windows, if the resolved binary path contains a space, the bare binary name is written into the hook config instead of the absolute path, relying on `PATH` resolution.
+`--list` prints the currently supported platforms and warns about stale hooks from removed platforms. Cursor installs hooks for both its IDE and CLI in `~/.cursor/hooks.json`. For Codex, `--force` replaces an existing `notify` program. Copilot writes user-level hooks at `$COPILOT_HOME/hooks/thirdeye.json` (default `~/.copilot/hooks/thirdeye.json`); see [Copilot capture](/docs/copilot-capture) for what it reads and how to opt already-completed history into export. On Windows, if the resolved binary path contains a space, the bare binary name is written into the hook config instead of the absolute path, relying on `PATH` resolution.
 
 ### `thirdeye remove`
 
@@ -72,6 +74,17 @@ thirdeye remove --<platform>
 ```
 
 Reverses the corresponding `add`. Captured data on disk is left in place.
+
+### `thirdeye copilot`
+
+```
+thirdeye copilot status [--source-home PATH]
+thirdeye copilot sync [--source-home PATH] [--export]
+thirdeye copilot reconcile [--export] [--session-id ID --rebuild]
+thirdeye copilot watch [--source-home PATH] [--interval SECONDS]
+```
+
+Copilot-specific archive commands. `status` and `sync` report and import from `--source-home` (falls back to `COPILOT_HOME`, then `~/.copilot`); `reconcile` rebuilds local V2 projections from the retained archive without touching the source. `--export` on `sync`/`reconcile` opts already-completed retained history into export; without it, projections refresh locally only. `--session-id ... --rebuild` rebuilds one archive's derived indexes and preserves the raw archive and delivery ledger. `watch` is an explicit foreground poller, not started by `add` or `setup`. See [Copilot capture](/docs/copilot-capture) for the archive model and export-eligibility rules.
 
 ---
 
@@ -86,7 +99,7 @@ thirdeye logfire enable
 thirdeye logfire enable --auth
 ```
 
-Signs in to Logfire in the browser, mints a project write token, persists it, and enables live export. When a token is already saved, the command offers to reuse it instead of signing in again. When the account has more than one writable project you pick which to use; when it lists none, the command offers to create or attach one. `--auth` logs out first, so a different account or an expired login can re-authenticate. The token is not accepted as a command-line option. Python installs require `pip install 'thrdi[logfire]'`; Homebrew includes Logfire support.
+Signs in to Logfire in the browser, mints a project write token, persists it, and enables live export. When a token is already saved, the command offers to reuse it instead of signing in again. When the account has more than one writable project you pick which to use; when it lists none, the command offers to create or attach one. `--auth` logs out first, so a different account or an expired login can re-authenticate. The token is not accepted as a command-line option. Logfire support ships with every installation — no extra to install.
 
 ### `thirdeye logfire status`
 
@@ -312,7 +325,7 @@ thirdeye ui [--port N] [--host ADDR] [--no-browser]
 thirdeye serve [--port N] [--host ADDR] [--no-browser]
 ```
 
-Launch the local browser UI. Defaults to `http://127.0.0.1:8765` and auto-opens your default browser. `thirdeye serve` is a full alias of `thirdeye ui` — same host, port, and browser flags. Python installs require the `ui` extra (`pip install 'thrdi[ui]'`); Homebrew includes it.
+Launch the local browser UI. Defaults to `http://127.0.0.1:8765` and auto-opens your default browser. `thirdeye serve` is a full alias of `thirdeye ui` — same host, port, and browser flags. The browser UI ships with every installation — no extra to install.
 
 ### `thirdeye views`
 

@@ -8,7 +8,7 @@ order: 8
   Download All Skills
 </a>
 
-thirdeye ships five Claude-Code-format skills so the agents you trace can also *use* their history. Installed once into a repo, they're discoverable by Claude Code, Cursor, and any other client that reads the `.agents/skills/` or `.claude/skills/` conventions.
+thirdeye ships five Claude-Code-format skills so the agents you trace can also *use* their history. Installed once into a repo, they're discoverable by Claude Code, Cursor, Copilot, and any other client that reads the `.agents/skills/` or `.claude/skills/` conventions.
 
 ## The bundled skills
 
@@ -53,7 +53,7 @@ Use this when asked to reduce agent costs, improve results, or suggest new skill
 Setup and diagnostics for the optional [Logfire export](/docs/logfire). Teaches an agent to:
 
 - Check export health with `thirdeye logfire status`.
-- Install the `thrdi[logfire]` extra and enable export with a project write token.
+- Reinstall thirdeye if Logfire dependencies are missing, and enable export with a project write token.
 - Connect the Logfire MCP server for querying exported traces.
 - Troubleshoot missing spans and disable export cleanly.
 
@@ -186,7 +186,7 @@ If you want a frozen copy that won't move with thirdeye upgrades, install once a
 
 After install, Claude Code picks up skills under `.agents/skills/` and `.claude/skills/` automatically. Mention the skill by name in your prompt — for example, "use the `use-thirdeye` skill to find sessions that touched `auth.py` last week" — and Claude will load the skill instructions.
 
-### Cursor / Codex / Gemini
+### Cursor / Codex / Copilot / Gemini
 
 Any client that reads the `.agents/skills/` convention will discover the same files. For clients that don't, point them at the `SKILL.md` directly — the file is plain markdown and the rest of the skill (the `references/` directory) is just supplementary content the agent reads when needed.
 

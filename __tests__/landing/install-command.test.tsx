@@ -4,8 +4,8 @@ import userEvent from "@testing-library/user-event";
 import { InstallCommand } from "@/components/landing/install-command";
 
 const BREW = "brew install duncankmckinnon/tap/thirdeye";
-const PIP = "pip install 'thrdi[ui,logfire]'";
-const UV = "uv tool install 'thrdi[ui,logfire]'";
+const PIP = "pip install thrdi";
+const UV = "uv tool install thrdi";
 
 describe("InstallCommand", () => {
   it("offers brew, pip, and uv", () => {

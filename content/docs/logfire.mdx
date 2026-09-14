@@ -1,24 +1,16 @@
 ---
 title: Pydantic Logfire
-description: Mirror completed Claude Code, Codex, and Cursor turns as nested OpenTelemetry traces.
+description: Mirror completed Claude Code, Codex, Cursor, and Copilot turns as nested OpenTelemetry traces.
 order: 3
 ---
 
-thirdeye is local-first, but it can optionally mirror each captured Claude Code, Codex, or Cursor session to [Pydantic Logfire](https://pydantic.dev/logfire). Export is live once enabled; there is no separate batch-export step.
+thirdeye is local-first, but it can optionally mirror each captured Claude Code, Codex, Cursor, or Copilot session to [Pydantic Logfire](https://pydantic.dev/logfire). Export is live once enabled; there is no separate batch-export step.
 
 ## Enable export
 
-If you installed thirdeye with Homebrew, Logfire support is already included:
+Every installation — Homebrew, `pipx`, `uv`, or `pip` — includes Logfire support, so there's no separate extra to install:
 
 ```bash
-thirdeye logfire enable
-thirdeye logfire status
-```
-
-For a Python installation, install the optional dependency first:
-
-```bash
-pip install 'thrdi[logfire]'
 thirdeye logfire enable
 thirdeye logfire status
 ```
@@ -45,14 +37,14 @@ thirdeye logfire disable
 
 Logfire export is only the first half of the workflow. Connect your coding agent to Logfire's hosted MCP server to ask questions about captured sessions or maintain dashboards without copying telemetry into the prompt by hand:
 
-- **[Query Logfire with MCP](/docs/logfire-mcp)** — connect Claude Code, Codex, or Cursor and investigate sessions with natural-language questions backed by SQL.
+- **[Query Logfire with MCP](/docs/logfire-mcp)** — connect Claude Code, Codex, Cursor, or Copilot and investigate sessions with natural-language questions backed by SQL.
 - **[Build coding-agent dashboards](/docs/logfire-dashboards)** — turn validated MCP queries into reusable Logfire dashboards for cost, throughput, outcomes, and tool behavior.
 
 The Logfire write token saved by thirdeye and the MCP connection are separate credentials. MCP normally uses browser OAuth; never reuse the saved write token as an MCP credential.
 
 ## Trace shape
 
-Each thirdeye session becomes one Logfire trace, searchable by `gen_ai.conversation.id` and separated by `claude`, `codex`, or `cursor` service name.
+Each thirdeye session becomes one Logfire trace, searchable by `gen_ai.conversation.id` and separated by `claude`, `codex`, `cursor`, or `copilot` service name.
 
 ```mermaid
 graph TD
@@ -72,7 +64,7 @@ graph TD
 - Permission requests sit directly under their turn as point-in-time spans.
 - Subagent turns nest recursively and preserve their own model and tool-call trees.
 
-Claude Code can produce multiple model-call spans within one turn. Codex reconstructs its model calls and tool children from the completed rollout, deduplicating cumulative token reports before calculating usage. Cursor reconstructs generations from IDE or CLI hooks, pairing shell and MCP callbacks while recording file operations, generic tools, and completed subagents.
+Claude Code can produce multiple model-call spans within one turn. Codex reconstructs its model calls and tool children from the completed rollout, deduplicating cumulative token reports before calculating usage. Cursor reconstructs generations from IDE or CLI hooks, pairing shell and MCP callbacks while recording file operations, generic tools, and completed subagents. Copilot derives turns from its local archive (see [Copilot capture](/docs/copilot-capture)); its native nano-AI-unit billing is kept as a separate accounting kind rather than folded into an estimated USD model price.
 
 Subagents dispatched in Cursor IDE and CLI sessions are exported beneath their dispatching `Task` span, including background, parallel, and nested children. Each child's tool calls are attributed to it by the child hook generation derived from its `Task` call identity — never by timing, nearest-turn heuristics, or tool-completion order.
 
@@ -92,7 +84,7 @@ Logfire's default secret scrubbing remains active. thirdeye exempts only the def
 
 ## Troubleshooting
 
-- **`package installed : False`.** Python installs need `pip install 'thrdi[logfire]'` in the same environment that provides `thirdeye`. Homebrew installs already include it.
+- **`package installed : False`.** Reinstall with `pip install --upgrade --force-reinstall thrdi` in the same environment that provides `thirdeye` — Logfire support ships with every installation.
 - **`active : False`.** Export is active only when the package is installed, export is enabled, and a token is saved.
 - **A turn does not appear immediately.** Export begins after a turn is completed or interrupted, and the detached worker may take a moment to flush.
 - **Export failures.** Run `thirdeye usage errors` to inspect the capture audit log without exposing failures to the agent hook.
