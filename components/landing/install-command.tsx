@@ -7,8 +7,8 @@ type Method = "brew" | "pip" | "uv";
 
 const COMMANDS: Record<Method, string> = {
   brew: "brew install duncankmckinnon/tap/thirdeye",
-  pip: "pip install 'thrdi[ui,logfire]'",
-  uv: "uv tool install 'thrdi[ui,logfire]'",
+  pip: "pip install thrdi",
+  uv: "uv tool install thrdi",
 };
 
 const SIZE_CLASSES = {

@@ -15,7 +15,7 @@ This guide is based on the **Coding Agents** dashboard in the `agent-tracing` pr
 4. Turn quality — outcomes, p50/p95 duration, and interruption rate.
 5. Tool behavior — tool mix, failure rate, calls per turn, and permission friction.
 
-The same structure works for Cursor by including `cursor` in each platform filter.
+The same structure works for Cursor and Copilot by including `cursor` and `copilot` in each platform filter.
 
 ## Inspect before changing
 
@@ -47,7 +47,7 @@ Here is a reusable creation prompt:
 ```text
 Build a custom Logfire dashboard named Coding Agent Workflow in the
 agent-tracing project. First inspect the schema and validate every query over
-the last seven days. Include Claude Code, Codex, and Cursor. Organize panels
+the last seven days. Include Claude Code, Codex, Cursor, and Copilot. Organize panels
 into Headline, Cost & tokens, Shipped work, Turn quality, and Tool behavior.
 Use time-series charts for trends, value or bar charts for comparisons, and a
 table for failure details. Show me the proposed queries and layout before you
@@ -82,7 +82,7 @@ SELECT
   count(*) AS turns
 FROM records
 WHERE span_name IN ('agent-turn', 'agent_turn')
-  AND service_name IN ('claude', 'codex', 'cursor')
+  AND service_name IN ('claude', 'codex', 'cursor', 'copilot')
 GROUP BY x, series
 ORDER BY x
 LIMIT 500
@@ -98,7 +98,7 @@ SELECT
   approx_percentile_cont(duration, 0.95) AS p95
 FROM records
 WHERE span_name IN ('agent-turn', 'agent_turn')
-  AND service_name IN ('claude', 'codex', 'cursor')
+  AND service_name IN ('claude', 'codex', 'cursor', 'copilot')
   AND duration IS NOT NULL
 GROUP BY x, service_name
 ORDER BY x
@@ -119,7 +119,7 @@ SELECT
         0
       ) AS cost_per_turn
 FROM records
-WHERE service_name IN ('claude', 'codex', 'cursor')
+WHERE service_name IN ('claude', 'codex', 'cursor', 'copilot')
 GROUP BY service_name
 LIMIT 20
 ```
