@@ -17,7 +17,7 @@ Enable any of these with `thirdeye add --<platform>`. Each one is idempotent and
 | **Claude Code** | `thirdeye add --claude`  | Captures the full session lifecycle and reconstructs every completed or interrupted turn, including nested subagents. Pairs with the bundled [agent skills](/docs/skills). |
 | **Codex**       | `thirdeye add --codex`   | Combines Codex notify and JSON hook events with rollout data to reconstruct turns, model calls, tool calls, permissions, token usage, and subagents. Use `--force` only to replace an existing notify program. |
 | **Cursor**      | `thirdeye add --cursor`  | Registers hooks in `~/.cursor/hooks.json` for both the IDE and `cursor-agent` CLI. Reconstructs generations, model usage, shell and MCP calls, file edits and reads, generic tool events, and completed subagents. |
-| **Copilot**     | `thirdeye add --copilot` | Local, archive-first capture of the GitHub Copilot CLI: derives turns and usage from a durable, immutable local archive. See [Copilot capture](/docs/copilot-capture) for source resolution, export eligibility, and known limits. |
+| **Copilot**     | `thirdeye add --copilot` | Local, archive-first capture of the GitHub Copilot CLI: derives turns and usage from a durable, immutable local archive. |
 
 Once captured, every platform shares the same query surface: `thirdeye list / events / search / usage / tag / eval` all work identically across them.
 

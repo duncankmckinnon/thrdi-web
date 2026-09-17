@@ -13,7 +13,7 @@ Every `thirdeye` subcommand. The `thirdeye` and `thrdi` binaries are aliases —
 | `thirdeye setup` | Interactively configure tracing, agent skills, and optional Logfire export. |
 | `thirdeye add --<platform>` | Register hooks so future agent sessions on that platform are captured. |
 | `thirdeye remove --<platform>` | Detach hooks for a platform (data on disk is untouched). |
-| `thirdeye copilot status / sync / reconcile / watch` | Inspect, import, and rebuild the local Copilot archive (see [Copilot capture](/docs/copilot-capture)). |
+| `thirdeye copilot status / sync / reconcile / watch` | Inspect, import, and rebuild the local Copilot archive. |
 | `thirdeye logfire enable / status / disable` | Manage optional live export to Pydantic Logfire. |
 | `thirdeye list` | List recent sessions across all platforms, newest first. |
 | `thirdeye events <id>` | Print all events for a session. |
@@ -65,7 +65,7 @@ thirdeye add --list
 ```
 
 Registers a hook so the next session on that platform is captured. Idempotent.
-`--list` prints the currently supported platforms and warns about stale hooks from removed platforms. Cursor installs hooks for both its IDE and CLI in `~/.cursor/hooks.json`. For Codex, `--force` replaces an existing `notify` program. Copilot writes user-level hooks at `$COPILOT_HOME/hooks/thirdeye.json` (default `~/.copilot/hooks/thirdeye.json`); see [Copilot capture](/docs/copilot-capture) for what it reads and how to opt already-completed history into export. On Windows, if the resolved binary path contains a space, the bare binary name is written into the hook config instead of the absolute path, relying on `PATH` resolution.
+`--list` prints the currently supported platforms and warns about stale hooks from removed platforms. Cursor installs hooks for both its IDE and CLI in `~/.cursor/hooks.json`. For Codex, `--force` replaces an existing `notify` program. Copilot writes user-level hooks at `$COPILOT_HOME/hooks/thirdeye.json` (default `~/.copilot/hooks/thirdeye.json`); see `thirdeye copilot` below for what it reads and how to opt already-completed history into export. On Windows, if the resolved binary path contains a space, the bare binary name is written into the hook config instead of the absolute path, relying on `PATH` resolution.
 
 ### `thirdeye remove`
 
@@ -84,7 +84,7 @@ thirdeye copilot reconcile [--export] [--session-id ID --rebuild]
 thirdeye copilot watch [--source-home PATH] [--interval SECONDS]
 ```
 
-Copilot-specific archive commands. `status` and `sync` report and import from `--source-home` (falls back to `COPILOT_HOME`, then `~/.copilot`); `reconcile` rebuilds local V2 projections from the retained archive without touching the source. `--export` on `sync`/`reconcile` opts already-completed retained history into export; without it, projections refresh locally only. `--session-id ... --rebuild` rebuilds one archive's derived indexes and preserves the raw archive and delivery ledger. `watch` is an explicit foreground poller, not started by `add` or `setup`. See [Copilot capture](/docs/copilot-capture) for the archive model and export-eligibility rules.
+Copilot-specific archive commands. `status` and `sync` report and import from `--source-home` (falls back to `COPILOT_HOME`, then `~/.copilot`); `reconcile` rebuilds local V2 projections from the retained archive without touching the source. `--export` on `sync`/`reconcile` opts already-completed retained history into export; without it, projections refresh locally only. `--session-id ... --rebuild` rebuilds one archive's derived indexes and preserves the raw archive and delivery ledger. `watch` is an explicit foreground poller, not started by `add` or `setup`.
 
 ---
 

@@ -64,7 +64,7 @@ graph TD
 - Permission requests sit directly under their turn as point-in-time spans.
 - Subagent turns nest recursively and preserve their own model and tool-call trees.
 
-Claude Code can produce multiple model-call spans within one turn. Codex reconstructs its model calls and tool children from the completed rollout, deduplicating cumulative token reports before calculating usage. Cursor reconstructs generations from IDE or CLI hooks, pairing shell and MCP callbacks while recording file operations, generic tools, and completed subagents. Copilot derives turns from its local archive (see [Copilot capture](/docs/copilot-capture)); its native nano-AI-unit billing is kept as a separate accounting kind rather than folded into an estimated USD model price.
+Claude Code can produce multiple model-call spans within one turn. Codex reconstructs its model calls and tool children from the completed rollout, deduplicating cumulative token reports before calculating usage. Cursor reconstructs generations from IDE or CLI hooks, pairing shell and MCP callbacks while recording file operations, generic tools, and completed subagents. Copilot derives turns from its local archive; its native nano-AI-unit billing is kept as a separate accounting kind rather than folded into an estimated USD model price.
 
 Subagents dispatched in Cursor IDE and CLI sessions are exported beneath their dispatching `Task` span, including background, parallel, and nested children. Each child's tool calls are attributed to it by the child hook generation derived from its `Task` call identity — never by timing, nearest-turn heuristics, or tool-completion order.
 
